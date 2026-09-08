@@ -38,67 +38,7 @@
       '.wa-theme-btn:hover, .wa-card-btn:hover { filter: brightness(1.15); } ' +
       '@keyframes waFadeIn { from { opacity: 0; } to { opacity: 1; } } ' +
       '@keyframes waSlideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } } ' +
-      '@keyframes waProgressIndeterminate { 0% { transform: translateX(-100%); } 50% { transform: translateX(0%); } 100% { transform: translateX(100%); } } ' +
-      'html.wa-force-dark, html.wa-force-dark body, html.wa-force-dark #app, html.wa-force-dark .app-wrapper, html.wa-force-dark #main, html.wa-force-dark #pane-side { ' +
-      '  --WDS-app-wash: #0c1317 !important; --WDS-background-wash-plain: #111b21 !important; --WDS-background-wash-inset: #202c33 !important; ' +
-      '  --WDS-background-elevated-wash-plain: #202c33 !important; --WDS-background-elevated-wash-inset: #111b21 !important; ' +
-      '  --WDS-background-dimmer: rgba(11, 20, 26, 0.7) !important; --WDS-surface-elevated-default: #202c33 !important; ' +
-      '  --WDS-components-surface-nav-bar: #202c33 !important; --WDS-components-active-list-row: #202c33 !important; ' +
-      '  --WDS-components-filter-surface-selected: #00a884 !important; --WDS-content-default: #e9edef !important; ' +
-      '  --WDS-content-deemphasized: #8696a0 !important; --WDS-content-action-default: #00a884 !important; ' +
-      '  --WDS-content-action-emphasized: #00a884 !important; --WDS-content-inverse: #111b21 !important; ' +
-      '  --WDS-content-disabled: #667781 !important; --WDS-content-on-accent: #111b21 !important; ' +
-      '  --WDS-lines-divider: #222d34 !important; --WDS-lines-outline-deemphasized: #222d34 !important; ' +
-      '  --WDS-accent: #00a884 !important; --WDS-accent-deemphasized: rgba(0, 168, 132, 0.15) !important; ' +
-      '  --WDS-accent-emphasized: #00c298 !important; ' +
-      '  --background-default: #111b21 !important; --background-default-hover: #202c33 !important; --background-default-active: #222e35 !important; ' +
-      '  --app-background: #0c1317 !important; --app-background-stripe: #00a884 !important; --panel-background: #111b21 !important; ' +
-      '  --panel-background-lighter: #202c33 !important; --panel-background-colored: #202c33 !important; --panel-background-deep: #111b21 !important; ' +
-      '  --panel-header-background: #202c33 !important; --panel-header-icon: #aebac1 !important; --conversation-panel-background: #0b141a !important; ' +
-      '  --conversation-panel-border: rgba(134, 150, 160, 0.15) !important; --border-default: #222d34 !important; --border-list: #222d34 !important; ' +
-      '  --border-strong: #2a3942 !important; --border-stronger: #8696a0 !important; --primary-strong: #e9edef !important; ' +
-      '  --primary: #e9edef !important; --primary-title: #e9edef !important; --secondary: #8696a0 !important; ' +
-      '  --secondary-stronger: #aebac1 !important; --secondary-lighter: #667781 !important; --message-primary: #e9edef !important; ' +
-      '  --message-secondary: #8696a0 !important; --incoming-background: #202c33 !important; --incoming-background-rgb: 32, 44, 51 !important; ' +
-      '  --incoming-primary: #e9edef !important; --outgoing-background: #005c4b !important; --outgoing-background-rgb: 0, 92, 75 !important; ' +
-      '  --outgoing-primary: #e9edef !important; --system-message-background: #182229 !important; --system-message-text: #8696a0 !important; ' +
-      '  --dropdown-background: #233138 !important; --dropdown-background-hover: #182229 !important; --modal-backdrop: rgba(11, 20, 26, 0.7) !important; ' +
-      '  --modal-background: #222e35 !important; --search-input-background: #202c33 !important; --compose-input-background: #2a3942 !important; ' +
-      '  --compose-input-border: #2a3942 !important; --chat-marker-admin: #00a884 !important; --intro-background: #111b21 !important; ' +
-      '  --intro-border: #00a884 !important; --icon-lighter: #8696a0 !important; --icon: #aebac1 !important; --icon-fixed: #aebac1 !important; ' +
-      '  color-scheme: dark !important; ' +
-      '} ' +
-      'html.wa-force-dark body { background-color: #0c1317 !important; color: #e9edef !important; } ' +
-      'html.wa-force-light, html.wa-force-light body, html.wa-force-light #app, html.wa-force-light .app-wrapper, html.wa-force-light #main, html.wa-force-light #pane-side { ' +
-      '  --WDS-app-wash: #eae6df !important; --WDS-background-wash-plain: #ffffff !important; --WDS-background-wash-inset: #f0f2f5 !important; ' +
-      '  --WDS-background-elevated-wash-plain: #ffffff !important; --WDS-background-elevated-wash-inset: #f0f2f5 !important; ' +
-      '  --WDS-background-dimmer: rgba(11, 20, 26, 0.4) !important; --WDS-surface-elevated-default: #ffffff !important; ' +
-      '  --WDS-components-surface-nav-bar: #f0f2f5 !important; --WDS-components-active-list-row: #f0f2f5 !important; ' +
-      '  --WDS-components-filter-surface-selected: #008069 !important; --WDS-content-default: #111b21 !important; ' +
-      '  --WDS-content-deemphasized: #667781 !important; --WDS-content-action-default: #008069 !important; ' +
-      '  --WDS-content-action-emphasized: #008069 !important; --WDS-content-inverse: #ffffff !important; ' +
-      '  --WDS-content-disabled: #8696a0 !important; --WDS-content-on-accent: #ffffff !important; ' +
-      '  --WDS-lines-divider: #e9edef !important; --WDS-lines-outline-deemphasized: #e9edef !important; ' +
-      '  --WDS-accent: #008069 !important; --WDS-accent-deemphasized: rgba(0, 128, 105, 0.15) !important; ' +
-      '  --WDS-accent-emphasized: #00a884 !important; ' +
-      '  --background-default: #ffffff !important; --background-default-hover: #f5f6f6 !important; --background-default-active: #ebebeb !important; ' +
-      '  --app-background: #eae6df !important; --app-background-stripe: #00a884 !important; --panel-background: #ffffff !important; ' +
-      '  --panel-background-lighter: #ffffff !important; --panel-background-colored: #008069 !important; --panel-background-deep: #f0f2f5 !important; ' +
-      '  --panel-header-background: #f0f2f5 !important; --panel-header-icon: #54656f !important; --conversation-panel-background: #efeae2 !important; ' +
-      '  --conversation-panel-border: rgba(11, 20, 26, 0.08) !important; --border-default: #e9edef !important; --border-list: #e9edef !important; ' +
-      '  --border-strong: #d1d7db !important; --border-stronger: #8696a0 !important; --primary-strong: #111b21 !important; ' +
-      '  --primary: #111b21 !important; --primary-title: #111b21 !important; --secondary: #667781 !important; ' +
-      '  --secondary-stronger: #3b4a54 !important; --secondary-lighter: #8696a0 !important; --message-primary: #111b21 !important; ' +
-      '  --message-secondary: #667781 !important; --incoming-background: #ffffff !important; --incoming-background-rgb: 255, 255, 255 !important; ' +
-      '  --incoming-primary: #111b21 !important; --outgoing-background: #d9fdd3 !important; --outgoing-background-rgb: 217, 253, 211 !important; ' +
-      '  --outgoing-primary: #111b21 !important; --system-message-background: #ffffff !important; --system-message-text: #54656f !important; ' +
-      '  --dropdown-background: #ffffff !important; --dropdown-background-hover: #f5f6f6 !important; --modal-backdrop: rgba(11, 20, 26, 0.4) !important; ' +
-      '  --modal-background: #ffffff !important; --search-input-background: #f0f2f5 !important; --compose-input-background: #ffffff !important; ' +
-      '  --compose-input-border: #ffffff !important; --chat-marker-admin: #008069 !important; --intro-background: #f0f2f5 !important; ' +
-      '  --intro-border: #00a884 !important; --icon-lighter: #8696a0 !important; --icon: #54656f !important; --icon-fixed: #54656f !important; ' +
-      '  color-scheme: light !important; ' +
-      '} ' +
-      'html.wa-force-light body { background-color: #eae6df !important; color: #111b21 !important; }';
+      '@keyframes waProgressIndeterminate { 0% { transform: translateX(-100%); } 50% { transform: translateX(0%); } 100% { transform: translateX(100%); } }';
     if (document.head) {
       document.head.appendChild(style);
     } else {
@@ -433,7 +373,7 @@
     });
   })();
 
-  // --- 12. Theme Management ---
+  // --- 12. Native Theme Management ---
   function getSystemIsDark() {
     try {
       if (window.matchMedia) {
@@ -459,63 +399,86 @@
     } catch (e) {}
   }
 
-  function applyThemeToDOM(theme) {
+  window.setAppTheme = function(theme) {
+    if (theme !== 'dark' && theme !== 'light' && theme !== 'system') {
+      theme = 'system';
+    }
     currentTheme = theme;
     try { localStorage.setItem('wa_desk_theme', theme); } catch (e) {}
 
     var isDark = (theme === 'system') ? getSystemIsDark() : (theme === 'dark');
 
-    var root = document.documentElement;
-    if (root) {
-      if (isDark) {
-        root.classList.remove('wa-force-light');
-        root.classList.add('wa-force-dark');
-        root.setAttribute('data-theme', 'dark');
-        root.style.colorScheme = 'dark';
+    // 1. Sync WhatsApp Web's native localStorage settings
+    try {
+      if (theme === 'system') {
+        localStorage.setItem('system-theme-mode', 'true');
+        localStorage.setItem('theme', JSON.stringify(isDark ? 'dark' : 'light'));
       } else {
-        root.classList.remove('wa-force-dark');
-        root.classList.add('wa-force-light');
-        root.setAttribute('data-theme', 'light');
-        root.style.colorScheme = 'light';
+        localStorage.setItem('system-theme-mode', 'false');
+        localStorage.setItem('theme', JSON.stringify(theme));
       }
-    }
+    } catch (e) {}
 
-    if (document.body) {
-      if (isDark) {
-        document.body.classList.remove('light');
-        document.body.classList.add('dark');
-      } else {
-        document.body.classList.remove('dark');
-        document.body.classList.add('light');
-      }
-    }
-
-    // Update native window appearance & WKWebView prefers-color-scheme
+    // 2. Update native window appearance & WKWebView prefers-color-scheme
     invokeBackend('set_native_theme', { theme: theme });
 
-    // Sync WhatsApp internal module if available
+    // 3. Try to notify internal WhatsApp module
     syncWhatsAppInternalTheme(theme);
 
+    // 4. Update modal UI if open
     if (window.syncModalTheme) {
       window.syncModalTheme(isDark);
     }
-  }
 
-  window.setAppTheme = function(theme) {
-    if (theme !== 'dark' && theme !== 'light' && theme !== 'system') {
-      theme = 'dark';
+    var label = theme === 'dark' ? 'Mode Gelap' : (theme === 'light' ? 'Mode Terang' : 'Auto (Sistem)');
+    showFloatingToast('Tema: ' + label + ' · Menerapkan...');
+
+    // 5. Reload WhatsApp Web cleanly to let Meta StyleX render 100% natively
+    setTimeout(function() {
+      window.location.reload();
+    }, 450);
+  };
+
+  // Helper to open WhatsApp's own native settings dialog
+  window.openWhatsAppNativeThemeSettings = function() {
+    var closeBtn = document.getElementById('wa-settings-close-x');
+    if (closeBtn) closeBtn.click();
+
+    var selectors = [
+      'button[aria-label="Settings"]',
+      'button[aria-label="Pengaturan"]',
+      'button[aria-label="Setelan"]',
+      'span[data-icon="settings-refreshed"]',
+      'span[data-icon="settings"]',
+      'div[title="Settings"]',
+      'div[title="Pengaturan"]',
+      'div[title="Setelan"]'
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+      var el = document.querySelector(selectors[i]);
+      if (el) {
+        var btn = el.closest('button') || el;
+        btn.click();
+        showFloatingToast('Membuka Pengaturan WhatsApp...');
+        return;
+      }
     }
-    applyThemeToDOM(theme);
-    showFloatingToast(theme === 'dark' ? 'Tema: Mode Gelap' : (theme === 'light' ? 'Tema: Mode Terang' : 'Tema: Mengikuti Sistem'));
+    showFloatingToast('Ikon Pengaturan WhatsApp ada di bilah samping kiri.');
   };
 
   // Listen for system appearance changes
   try {
     if (window.matchMedia) {
       var sysMedia = window.matchMedia('(prefers-color-scheme: dark)');
-      var onSysChange = function() {
+      var onSysChange = function(e) {
         if (currentTheme === 'system') {
-          applyThemeToDOM('system');
+          try {
+            localStorage.setItem('theme', JSON.stringify(e.matches ? 'dark' : 'light'));
+          } catch(err) {}
+          if (window.syncModalTheme) {
+            window.syncModalTheme(e.matches);
+          }
+          window.location.reload();
         }
       };
       if (sysMedia.addEventListener) {
@@ -527,24 +490,28 @@
   } catch (e) {}
 
   function initTheme() {
-    applyThemeToDOM(currentTheme);
+    try {
+      currentTheme = localStorage.getItem('wa_desk_theme') || 'system';
+    } catch(e) {}
+    var isDark = (currentTheme === 'system') ? getSystemIsDark() : (currentTheme === 'dark');
+    try {
+      if (currentTheme === 'system') {
+        localStorage.setItem('system-theme-mode', 'true');
+      } else {
+        localStorage.setItem('system-theme-mode', 'false');
+        localStorage.setItem('theme', JSON.stringify(currentTheme));
+      }
+    } catch(e) {}
+
+    invokeBackend('set_native_theme', { theme: currentTheme });
+
+    if (window.syncModalTheme) {
+      window.syncModalTheme(isDark);
+    }
   }
   initTheme();
   document.addEventListener('DOMContentLoaded', initTheme);
   window.addEventListener('load', initTheme);
-
-  setInterval(function() {
-    if (document.body) {
-      var isDark = (currentTheme === 'system') ? getSystemIsDark() : (currentTheme === 'dark');
-      if (isDark) {
-        if (!document.body.classList.contains('dark')) document.body.classList.add('dark');
-        if (document.body.classList.contains('light')) document.body.classList.remove('light');
-      } else {
-        if (document.body.classList.contains('dark')) document.body.classList.remove('dark');
-        if (!document.body.classList.contains('light')) document.body.classList.add('light');
-      }
-    }
-  }, 2000);
 
   // --- 13. AutoStart & Download Directory IPC Helpers ---
   window.isAutoStartActive = false;
@@ -907,22 +874,28 @@
       '    </div>' +
       '    <div>' +
       '      <h3 id="wa-modal-title" style="margin:0;font-size:15px;font-weight:600;">WhatsApp Desk</h3>' +
-      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.4</span>' +
+      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.5</span>' +
       '    </div>' +
       '  </div>' +
       '  <button id="wa-settings-close-x" style="background:transparent;border:none;cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;">' + ICONS.close + '</button>' +
       '</div>' +
 
       // Section 1: Tema Tampilan
-      '<div class="wa-modal-card" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;border-width:1px;border-style:solid;gap:12px;">' +
-      '  <div>' +
-      '    <strong class="wa-text-primary" style="font-size:12.5px;display:block;">Tema Tampilan WhatsApp</strong>' +
-      '    <span class="wa-text-muted" style="font-size:11px;">Pilih mode gelap, terang, atau ikuti sistem</span>' +
+      '<div class="wa-modal-card" style="display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-radius:8px;border-width:1px;border-style:solid;">' +
+      '  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
+      '    <div>' +
+      '      <strong class="wa-text-primary" style="font-size:12.5px;display:block;">Tema Tampilan WhatsApp</strong>' +
+      '      <span class="wa-text-muted" style="font-size:11px;">Pilih mode tema tampilan WhatsApp Web:</span>' +
+      '    </div>' +
+      '    <div style="display:flex;align-items:center;gap:4px;">' +
+      '      <button id="wa-theme-btn-dark" class="wa-theme-btn" style="display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:6px;font-size:11.5px;cursor:pointer;border-width:1px;border-style:solid;font-weight:500;">' + ICONS.moon + ' Gelap</button>' +
+      '      <button id="wa-theme-btn-light" class="wa-theme-btn" style="display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:6px;font-size:11.5px;cursor:pointer;border-width:1px;border-style:solid;font-weight:500;">' + ICONS.sun + ' Terang</button>' +
+      '      <button id="wa-theme-btn-system" class="wa-theme-btn" style="display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:6px;font-size:11.5px;cursor:pointer;border-width:1px;border-style:solid;font-weight:500;">' + ICONS.monitor + ' Auto</button>' +
+      '    </div>' +
       '  </div>' +
-      '  <div style="display:flex;align-items:center;gap:4px;">' +
-      '    <button id="wa-theme-btn-dark" class="wa-theme-btn" style="display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:6px;font-size:11.5px;cursor:pointer;border-width:1px;border-style:solid;font-weight:500;">' + ICONS.moon + ' Gelap</button>' +
-      '    <button id="wa-theme-btn-light" class="wa-theme-btn" style="display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:6px;font-size:11.5px;cursor:pointer;border-width:1px;border-style:solid;font-weight:500;">' + ICONS.sun + ' Terang</button>' +
-      '    <button id="wa-theme-btn-system" class="wa-theme-btn" style="display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:6px;font-size:11.5px;cursor:pointer;border-width:1px;border-style:solid;font-weight:500;">' + ICONS.monitor + ' Auto</button>' +
+      '  <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;margin-top:2px;">' +
+      '    <span class="wa-text-muted" style="font-size:10.5px;">Memuat ulang otomatis agar seluruh tema Meta StyleX terpasang bersih.</span>' +
+      '    <button id="wa-btn-native-theme-settings" style="background:transparent;border:none;color:#00a884;font-size:10.5px;font-weight:600;cursor:pointer;padding:2px 4px;white-space:nowrap;">Buka Menu Pengaturan WA</button>' +
       '  </div>' +
       '</div>' +
 
@@ -1203,6 +1176,12 @@
       window.setAppTheme('system');
       window.updateModalUI();
     };
+    var btnNativeTheme = document.getElementById('wa-btn-native-theme-settings');
+    if (btnNativeTheme) {
+      btnNativeTheme.onclick = function() {
+        window.openWhatsAppNativeThemeSettings();
+      };
+    }
 
     // Card Action Events
     document.getElementById('wa-action-toggle-priv').onclick = function() {
@@ -1255,7 +1234,7 @@
         .then(function(data) {
           var latestTag = (data.tag_name || '').trim();
           var latestVer = latestTag.replace(/^v/, '').trim();
-          var currentVer = '0.2.4';
+          var currentVer = '0.2.5';
           if (latestVer && latestVer !== currentVer) {
             var asset = findPlatformAsset(data.assets);
             if (asset && asset.browser_download_url) {
