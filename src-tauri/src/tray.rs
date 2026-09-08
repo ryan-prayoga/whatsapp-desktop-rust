@@ -1,27 +1,33 @@
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager,
 };
 
 pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
-    let show_i = MenuItem::with_id(app, "show", "Tampilkan WhatsApp", true, None::<&str>)?;
-    let pin_i = MenuItem::with_id(app, "pin", "📌 Toggle Pin (Always on Top)", true, None::<&str>)?;
-    let privacy_i = MenuItem::with_id(app, "privacy", "🔒 Toggle Mode Privasi", true, None::<&str>)?;
-    let mute_i = MenuItem::with_id(app, "mute", "🔇 Toggle Senyapkan Audio", true, None::<&str>)?;
-    let download_i = MenuItem::with_id(app, "downloads", "📁 Buka Folder Unduhan", true, None::<&str>)?;
-    let reload_i = MenuItem::with_id(app, "reload", "🔄 Muat Ulang Chat", true, None::<&str>)?;
-    let quit_i = MenuItem::with_id(app, "quit", "Keluar dari WhatsApp Desk", true, None::<&str>)?;
+    let show_i = MenuItem::with_id(app, "show", "Buka WhatsApp", true, None::<&str>)?;
+    let sep1 = PredefinedMenuItem::separator(app)?;
+    let pin_i = MenuItem::with_id(app, "pin", "Always on Top", true, Some("CmdOrCtrl+Shift+T"))?;
+    let privacy_i = MenuItem::with_id(app, "privacy", "Mode Privasi", true, Some("CmdOrCtrl+Shift+P"))?;
+    let mute_i = MenuItem::with_id(app, "mute", "Senyapkan Audio", true, Some("CmdOrCtrl+Shift+M"))?;
+    let sep2 = PredefinedMenuItem::separator(app)?;
+    let download_i = MenuItem::with_id(app, "downloads", "Buka Folder Unduhan", true, Some("CmdOrCtrl+Shift+D"))?;
+    let reload_i = MenuItem::with_id(app, "reload", "Muat Ulang Chat", true, Some("CmdOrCtrl+Shift+R"))?;
+    let sep3 = PredefinedMenuItem::separator(app)?;
+    let quit_i = MenuItem::with_id(app, "quit", "Keluar", true, Some("CmdOrCtrl+Q"))?;
 
     let menu = Menu::with_items(
         app,
         &[
             &show_i,
+            &sep1,
             &pin_i,
             &privacy_i,
             &mute_i,
+            &sep2,
             &download_i,
             &reload_i,
+            &sep3,
             &quit_i,
         ],
     )?;

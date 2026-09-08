@@ -178,10 +178,10 @@
       isPrivacyActive = !isPrivacyActive;
       if (isPrivacyActive) {
         document.body.classList.add('privacy-mode');
-        showFloatingToast('🔒 Mode Privasi: Aktif');
+        showFloatingToast('Mode Privasi: Aktif');
       } else {
         document.body.classList.remove('privacy-mode');
-        showFloatingToast('🔓 Mode Privasi: Nonaktif');
+        showFloatingToast('Mode Privasi: Nonaktif');
       }
       return isPrivacyActive;
     };
@@ -194,7 +194,7 @@
     window.toggleAlwaysOnTop = function() {
       return invokeBackend('toggle_always_on_top').then(function(state) {
         isPinned = (state !== null && state !== undefined) ? state : !isPinned;
-        showFloatingToast(isPinned ? '📌 Always on Top: Aktif' : '📌 Always on Top: Nonaktif');
+        showFloatingToast(isPinned ? 'Always on Top: Aktif' : 'Always on Top: Nonaktif');
         return isPinned;
       });
     };
@@ -209,7 +209,7 @@
       document.querySelectorAll('audio, video').forEach(function(el) {
         el.muted = isMuted;
       });
-      showFloatingToast(isMuted ? '🔇 Audio Notifikasi: Dimatikan' : '🔊 Audio Notifikasi: Diaktifkan');
+      showFloatingToast(isMuted ? 'Audio Notifikasi: Dimatikan' : 'Audio Notifikasi: Diaktifkan');
       return isMuted;
     };
     window.isAudioMuted = function() { return isMuted; };
@@ -266,7 +266,7 @@
 
     function captureDownload(href, filename) {
       if (!filename) filename = lastDocName || 'whatsapp_download';
-      showFloatingToast('⏳ Menyimpan berkas: ' + filename + '...');
+      showFloatingToast('Menyimpan berkas: ' + filename + '...');
       fetch(href)
         .then(function(res) { return res.blob(); })
         .then(function(blob) {
@@ -275,10 +275,10 @@
             var b64 = reader.result;
             invokeBackend('save_downloaded_file', { filename: filename, dataUri: b64 }).then(function(savedPath) {
               if (savedPath) {
-                showFloatingToast('💾 Berhasil disimpan: ' + filename);
+                showFloatingToast('Berhasil disimpan: ' + filename);
               }
             }).catch(function(err) {
-              showFloatingToast('❌ Gagal menyimpan berkas.');
+              showFloatingToast('Gagal menyimpan berkas.');
             });
           };
           reader.readAsDataURL(blob);
@@ -327,18 +327,18 @@
         window.toggleMuteAudio();
       } else if (k === 'D') {
         e.preventDefault();
-        showFloatingToast('📁 Membuka folder di Finder...');
+        showFloatingToast('Membuka folder di Finder...');
         invokeBackend('open_download_dir')
           .then(function() {
-            showFloatingToast('📁 Folder unduhan terbuka di Finder');
+            showFloatingToast('Folder unduhan terbuka');
           })
           .catch(function(err) {
             console.error('Buka folder error:', err);
-            showFloatingToast('❌ Gagal membuka folder: ' + err);
+            showFloatingToast('Gagal membuka folder: ' + err);
           });
       } else if (k === 'R') {
         e.preventDefault();
-        showFloatingToast('⚡ Membersihkan cache & reload...');
+        showFloatingToast('Memuat ulang chat...');
         window.location.href = window.location.origin + window.location.pathname + '?_t=' + Date.now();
       }
     } else if (mod && (e.key === ',' || e.key === '<')) {
@@ -378,10 +378,12 @@
     modal.innerHTML = '' +
       '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a3942;padding-bottom:12px;">' +
       '  <div style="display:flex;align-items:center;gap:10px;">' +
-      '    <div style="width:34px;height:34px;border-radius:8px;background:rgba(0,168,132,0.15);display:flex;align-items:center;justify-content:center;color:#00a884;font-size:18px;">⚡</div>' +
+      '    <div style="width:34px;height:34px;border-radius:8px;background:rgba(0,168,132,0.15);display:flex;align-items:center;justify-content:center;color:#00a884;">' +
+      '      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>' +
+      '    </div>' +
       '    <div>' +
-      '      <h3 style="margin:0;font-size:15px;font-weight:600;color:#e9edef;">WhatsApp Desk (Rust + Tauri v2)</h3>' +
-      '      <span style="font-size:11px;color:#8696a0;">Ultra-lightweight • Zero-GC Native Engine</span>' +
+      '      <h3 style="margin:0;font-size:15px;font-weight:600;color:#e9edef;">WhatsApp Desk</h3>' +
+      '      <span style="font-size:11px;color:#8696a0;">Pengaturan & Kontrol Desktop</span>' +
       '    </div>' +
       '  </div>' +
       '  <button id="wa-btn-close-settings" style="background:transparent;border:none;color:#8696a0;cursor:pointer;font-size:18px;">✕</button>' +
@@ -390,27 +392,27 @@
       '  <div style="background:#202c33;padding:12px;border-radius:8px;border:1px solid #2a3942;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
       '    <div>' +
       '      <div style="display:flex;align-items:center;justify-content:space-between;">' +
-      '        <strong style="font-size:12.5px;">🔒 Mode Privasi</strong>' +
+      '        <strong style="font-size:12.5px;">Mode Privasi</strong>' +
       '        <span id="badge-priv" style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;background:rgba(255,255,255,0.08);color:#8696a0;">Nonaktif</span>' +
       '      </div>' +
-      '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Blur pesan & media.</div>' +
+      '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Blur obrolan & media.</div>' +
       '    </div>' +
       '    <button id="btn-toggle-priv" style="background:#111b21;border:1px solid #2a3942;color:#00a884;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Aktifkan (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+P)</button>' +
       '  </div>' +
       '  <div style="background:#202c33;padding:12px;border-radius:8px;border:1px solid #2a3942;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
       '    <div>' +
       '      <div style="display:flex;align-items:center;justify-content:space-between;">' +
-      '        <strong style="font-size:12.5px;">📌 Pin Jendela</strong>' +
+      '        <strong style="font-size:12.5px;">Always on Top</strong>' +
       '        <span id="badge-pin" style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;background:rgba(255,255,255,0.08);color:#8696a0;">Nonaktif</span>' +
       '      </div>' +
-      '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Selalu di barisan depan.</div>' +
+      '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Selalu berada di baris depan.</div>' +
       '    </div>' +
       '    <button id="btn-toggle-pin" style="background:#111b21;border:1px solid #2a3942;color:#00a884;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Pin (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+T)</button>' +
       '  </div>' +
       '  <div style="background:#202c33;padding:12px;border-radius:8px;border:1px solid #2a3942;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
       '    <div>' +
       '      <div style="display:flex;align-items:center;justify-content:space-between;">' +
-      '        <strong style="font-size:12.5px;">🔇 Audio Notifikasi</strong>' +
+      '        <strong style="font-size:12.5px;">Audio Notifikasi</strong>' +
       '        <span id="badge-mute" style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;background:rgba(0,168,132,0.15);color:#00a884;">Bersuara</span>' +
       '      </div>' +
       '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Senyapkan semua suara.</div>' +
@@ -419,7 +421,7 @@
       '  </div>' +
       '  <div style="background:#202c33;padding:12px;border-radius:8px;border:1px solid #2a3942;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
       '    <div>' +
-      '      <strong style="font-size:12.5px;">📁 Folder Unduhan</strong>' +
+      '      <strong style="font-size:12.5px;">Folder Unduhan</strong>' +
       '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Buka berkas tersimpan.</div>' +
       '    </div>' +
       '    <button id="btn-open-folder" style="background:#00a884;border:none;color:#111b21;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">' + (isMac ? 'Buka di Finder' : 'Buka Folder') + '</button>' +
@@ -486,14 +488,14 @@
       updateModalUI();
     };
     document.getElementById('btn-open-folder').onclick = function() {
-      showFloatingToast('📁 Membuka folder di Finder...');
+      showFloatingToast('Membuka folder di Finder...');
       invokeBackend('open_download_dir')
         .then(function() {
-          showFloatingToast('📁 Folder unduhan terbuka di Finder');
+          showFloatingToast('Folder unduhan terbuka');
         })
         .catch(function(err) {
           console.error('Buka folder error:', err);
-          showFloatingToast('❌ Gagal membuka folder: ' + (err || 'Error tidak diketahui'));
+          showFloatingToast('Gagal membuka folder: ' + (err || 'Error tidak diketahui'));
         });
       closeModal();
     };
