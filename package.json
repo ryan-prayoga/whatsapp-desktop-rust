@@ -1,6 +1,6 @@
 {
   "name": "whatsapp-desktop-rust",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Ultra-lightweight, native WhatsApp Desktop alternative built with Rust & Tauri v2",
   "private": true,
   "scripts": {

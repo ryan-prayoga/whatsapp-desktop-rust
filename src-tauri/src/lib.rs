@@ -38,6 +38,7 @@ pub fn run() {
         commands::pick_download_dir,
         commands::get_autostart_status,
         commands::toggle_autostart,
+        commands::download_and_install_update,
     ]);
 
     // 3. Setup & App Lifecycle

@@ -22,7 +22,8 @@
     "allow-reset-download-dir",
     "allow-pick-download-dir",
     "allow-get-autostart-status",
-    "allow-toggle-autostart"
+    "allow-toggle-autostart",
+    "allow-download-and-install-update"
   ],
   "remote": {
     "urls": [

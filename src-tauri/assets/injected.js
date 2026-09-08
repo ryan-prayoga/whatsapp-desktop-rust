@@ -87,7 +87,8 @@
       '.wa-theme-btn, .wa-card-btn { transition: all 0.15s ease-in-out; } ' +
       '.wa-theme-btn:hover, .wa-card-btn:hover { filter: brightness(1.15); } ' +
       '@keyframes waFadeIn { from { opacity: 0; } to { opacity: 1; } } ' +
-      '@keyframes waSlideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }';
+      '@keyframes waSlideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } } ' +
+      '@keyframes waProgressIndeterminate { 0% { transform: translateX(-100%); } 50% { transform: translateX(0%); } 100% { transform: translateX(100%); } }';
     if (document.head) {
       document.head.appendChild(style);
     } else {
@@ -769,6 +770,126 @@
     overlay.onclick = function(e) { if (e.target === overlay) closeShortcuts(); };
   };
 
+  // --- 16b. Platform Asset Resolver & Direct In-App Auto-Updater ---
+  function findPlatformAsset(assets) {
+    if (!assets || !assets.length) return null;
+    if (isMac) {
+      var tarAsset = assets.find(function(a) { return a.name && a.name.indexOf('universal.app.tar.gz') >= 0; });
+      if (tarAsset) return tarAsset;
+      var dmgAsset = assets.find(function(a) { return a.name && a.name.indexOf('aarch64.dmg') >= 0; })
+                  || assets.find(function(a) { return a.name && a.name.indexOf('.dmg') >= 0; });
+      return dmgAsset || assets[0];
+    } else if (isWin) {
+      var exeAsset = assets.find(function(a) { return a.name && a.name.indexOf('setup.exe') >= 0; })
+                  || assets.find(function(a) { return a.name && a.name.indexOf('.exe') >= 0; })
+                  || assets.find(function(a) { return a.name && a.name.indexOf('.msi') >= 0; });
+      return exeAsset || assets[0];
+    } else {
+      var linuxAsset = assets.find(function(a) { return a.name && a.name.indexOf('.AppImage') >= 0; })
+                    || assets.find(function(a) { return a.name && a.name.indexOf('.deb') >= 0; });
+      return linuxAsset || assets[0];
+    }
+  }
+
+  window.showDirectUpdateModal = function(releaseData, asset) {
+    var existing = document.getElementById('wa-direct-update-overlay');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    var isDark = (currentTheme === 'system') ? getSystemIsDark() : (currentTheme === 'dark');
+    var bg = isDark ? '#111b21' : '#ffffff';
+    var cardBg = isDark ? '#202c33' : '#f0f2f5';
+    var border = isDark ? '#2a3942' : '#e9edef';
+    var textPri = isDark ? '#e9edef' : '#111b21';
+    var textMut = isDark ? '#8696a0' : '#667781';
+    var accent = isDark ? '#00a884' : '#008069';
+
+    var latestTag = (releaseData.tag_name || '').trim();
+    var assetSizeMB = (asset && asset.size) ? (asset.size / (1024 * 1024)).toFixed(1) + ' MB' : '';
+
+    var overlay = document.createElement('div');
+    overlay.id = 'wa-direct-update-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:10000000;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;animation:waFadeIn 0.18s ease;';
+
+    var modal = document.createElement('div');
+    modal.style.cssText = 'width:460px;max-width:92vw;border-radius:12px;background:' + bg + ';border:1px solid ' + border + ';box-sizing:border-box;display:flex;flex-direction:column;gap:14px;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,0.8);animation:waSlideDown 0.2s ease;';
+
+    modal.innerHTML = '' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ' + border + ';padding-bottom:12px;">' +
+      '  <div style="display:flex;align-items:center;gap:10px;">' +
+      '    <div style="width:36px;height:36px;border-radius:8px;background:rgba(0,168,132,0.15);display:flex;align-items:center;justify-content:center;color:' + accent + ';">' +
+      '      ' + ICONS.update +
+      '    </div>' +
+      '    <div>' +
+      '      <h3 style="margin:0;font-size:15px;font-weight:600;color:' + textPri + ';">Pembaruan Aplikasi Tersedia</h3>' +
+      '      <span style="font-size:11.5px;color:' + textMut + ';">WhatsApp Desk ' + latestTag + (assetSizeMB ? ' (' + assetSizeMB + ')' : '') + '</span>' +
+      '    </div>' +
+      '  </div>' +
+      '  <button id="wa-update-modal-close-x" style="background:transparent;border:none;color:' + textMut + ';cursor:pointer;padding:4px;display:flex;">' + ICONS.close + '</button>' +
+      '</div>' +
+      '<div style="background:' + cardBg + ';border:1px solid ' + border + ';border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;">' +
+      '  <strong style="font-size:12.5px;color:' + textPri + ';">Pembaruan Langsung Otomatis</strong>' +
+      '  <div style="font-size:11.5px;color:' + textMut + ';line-height:1.5;">' +
+      '    Versi terbaru siap dipasang. Anda dapat memperbarui langsung secara instan tanpa perlu membuka peramban web atau mengunduh manual.' +
+      '  </div>' +
+      '  <div id="wa-update-progress-box" style="display:none;flex-direction:column;gap:6px;margin-top:4px;">' +
+      '    <div style="display:flex;justify-content:space-between;font-size:11px;color:' + accent + ';font-weight:500;">' +
+      '      <span id="wa-update-status-text">Mengunduh paket biner...</span>' +
+      '    </div>' +
+      '    <div style="width:100%;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;">' +
+      '      <div id="wa-update-progress-bar" style="width:100%;height:100%;background:' + accent + ';animation:waProgressIndeterminate 1.5s infinite linear;"></div>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid ' + border + ';padding-top:12px;">' +
+      '  <button id="wa-btn-update-gh" style="background:transparent;border:none;color:' + textMut + ';font-size:11px;cursor:pointer;text-decoration:underline;padding:2px 0;">Catatan Rilis di GitHub</button>' +
+      '  <div style="display:flex;gap:8px;">' +
+      '    <button id="wa-btn-update-cancel" style="background:' + cardBg + ';border:1px solid ' + border + ';color:' + textPri + ';padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;">Nanti Saja</button>' +
+      '    <button id="wa-btn-update-start" style="background:' + accent + ';border:none;color:' + (isDark ? '#111b21' : '#ffffff') + ';padding:7px 18px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">' + ICONS.update + ' Perbarui Sekarang</button>' +
+      '  </div>' +
+      '</div>';
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    function closeUpdateModal() {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }
+    document.getElementById('wa-update-modal-close-x').onclick = closeUpdateModal;
+    document.getElementById('wa-btn-update-cancel').onclick = closeUpdateModal;
+    document.getElementById('wa-btn-update-gh').onclick = function() {
+      invokeBackend('open_external_url', { url: releaseData.html_url || 'https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest' });
+    };
+
+    var btnStart = document.getElementById('wa-btn-update-start');
+    var progressBox = document.getElementById('wa-update-progress-box');
+    var statusText = document.getElementById('wa-update-status-text');
+
+    btnStart.onclick = function() {
+      btnStart.disabled = true;
+      btnStart.style.opacity = '0.6';
+      btnStart.style.cursor = 'not-allowed';
+      document.getElementById('wa-btn-update-cancel').style.display = 'none';
+      progressBox.style.display = 'flex';
+      statusText.textContent = 'Mengunduh dan memasang ' + latestTag + '...';
+      showFloatingToast('Mengunduh ' + latestTag + '...');
+
+      invokeBackend('download_and_install_update', {
+        downloadUrl: asset.browser_download_url,
+        assetName: asset.name
+      }).then(function(msg) {
+        statusText.textContent = msg || 'Pembaruan berhasil! Memulai ulang aplikasi...';
+        showFloatingToast(msg || 'Pembaruan selesai! Memulai ulang...');
+      }).catch(function(err) {
+        btnStart.disabled = false;
+        btnStart.style.opacity = '1';
+        btnStart.style.cursor = 'pointer';
+        document.getElementById('wa-btn-update-cancel').style.display = 'inline-block';
+        statusText.textContent = 'Gagal memasang otomatis: ' + err;
+        showFloatingToast('Gagal: ' + err);
+      });
+    };
+  };
+
   // --- 17. Settings / Control Center Modal (Clean & Modern, Zero Emojis) ---
   window.showSettingsModal = function() {
     var existing = document.getElementById('wa-settings-overlay');
@@ -796,7 +917,7 @@
       '    </div>' +
       '    <div>' +
       '      <h3 id="wa-modal-title" style="margin:0;font-size:15px;font-weight:600;">WhatsApp Desk</h3>' +
-      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.1</span>' +
+      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.2</span>' +
       '    </div>' +
       '  </div>' +
       '  <button id="wa-settings-close-x" style="background:transparent;border:none;cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;">' + ICONS.close + '</button>' +
@@ -1144,12 +1265,17 @@
         .then(function(data) {
           var latestTag = (data.tag_name || '').trim();
           var latestVer = latestTag.replace(/^v/, '').trim();
-          var currentVer = '0.2.1';
+          var currentVer = '0.2.2';
           if (latestVer && latestVer !== currentVer) {
-            showFloatingToast('Tersedia versi baru ' + latestTag + '! Membuka unduhan...');
-            setTimeout(function() {
-              invokeBackend('open_external_url', { url: data.html_url || 'https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest' });
-            }, 800);
+            var asset = findPlatformAsset(data.assets);
+            if (asset && asset.browser_download_url) {
+              window.showDirectUpdateModal(data, asset);
+            } else {
+              showFloatingToast('Tersedia versi baru ' + latestTag + '! Membuka unduhan...');
+              setTimeout(function() {
+                invokeBackend('open_external_url', { url: data.html_url || 'https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest' });
+              }, 800);
+            }
           } else {
             showFloatingToast('WhatsApp Desk sudah versi terbaru (v' + currentVer + ')');
           }

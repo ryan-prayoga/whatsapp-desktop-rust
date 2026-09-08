@@ -1,6 +1,6 @@
 [package]
 name = "whatsapp-desktop-rust"
-version = "0.2.1"
+version = "0.2.2"
 description = "Ultra-lightweight, native WhatsApp Desktop alternative built with Rust & Tauri v2"
 authors = ["Ryan Prayoga"]
 license = "MIT"
@@ -28,3 +28,4 @@ tauri-plugin-dialog = "2"
 base64 = "0.22"
 dirs = "5.0"
 open = "5.3"
+tauri-plugin-updater = "2.11.0"

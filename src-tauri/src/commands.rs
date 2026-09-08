@@ -269,3 +269,168 @@ pub fn save_downloaded_file(app: AppHandle, filename: String, data_uri: String) 
 
     Ok(target_path.to_string_lossy().to_string())
 }
+
+fn get_current_app_bundle() -> PathBuf {
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(macos_dir) = exe.parent() {
+            if let Some(contents_dir) = macos_dir.parent() {
+                if let Some(app_bundle) = contents_dir.parent() {
+                    if app_bundle.extension().map_or(false, |ext| ext == "app") {
+                        return app_bundle.to_path_buf();
+                    }
+                }
+            }
+        }
+    }
+    PathBuf::from("/Applications/WhatsApp Desk.app")
+}
+
+#[tauri::command]
+pub async fn download_and_install_update(
+    _app: AppHandle,
+    download_url: String,
+    asset_name: String,
+) -> Result<String, String> {
+    if !download_url.starts_with("https://") {
+        return Err("Protokol URL tidak aman atau tidak valid".to_string());
+    }
+
+    let temp_dir = std::env::temp_dir().join("wa_desk_update");
+    let _ = fs::create_dir_all(&temp_dir);
+    let downloaded_file = temp_dir.join(&asset_name);
+
+    #[cfg(target_os = "macos")]
+    {
+        let status = std::process::Command::new("curl")
+            .arg("-L")
+            .arg("-f")
+            .arg("-s")
+            .arg("-o")
+            .arg(&downloaded_file)
+            .arg(&download_url)
+            .status()
+            .map_err(|e| format!("Gagal mengunduh pembaruan: {}", e))?;
+
+        if !status.success() {
+            return Err("Gagal mengunduh berkas dari GitHub Releases".to_string());
+        }
+
+        if asset_name.ends_with(".tar.gz") {
+            let extract_dir = temp_dir.join("extracted");
+            let _ = fs::remove_dir_all(&extract_dir);
+            let _ = fs::create_dir_all(&extract_dir);
+
+            let tar_status = std::process::Command::new("tar")
+                .arg("-xzf")
+                .arg(&downloaded_file)
+                .arg("-C")
+                .arg(&extract_dir)
+                .status()
+                .map_err(|e| format!("Gagal mengekstrak berkas pembaruan: {}", e))?;
+
+            if !tar_status.success() {
+                return Err("Gagal mengekstrak berkas pembaruan".to_string());
+            }
+
+            let new_app = extract_dir.join("WhatsApp Desk.app");
+            if !new_app.exists() {
+                return Err("Arsip pembaruan tidak berisi WhatsApp Desk.app".to_string());
+            }
+
+            let target_app = get_current_app_bundle();
+
+            let updater_script = temp_dir.join("finish_update.sh");
+            let script_content = format!(
+                "#!/bin/bash\n\
+                sleep 1\n\
+                xattr -dr com.apple.quarantine \"{}\" 2>/dev/null\n\
+                rm -rf \"{}\"\n\
+                cp -R \"{}\" \"{}\"\n\
+                rm -rf \"{}\"\n\
+                open -n \"{}\"\n",
+                new_app.display(),
+                target_app.display(),
+                new_app.display(),
+                target_app.display(),
+                temp_dir.display(),
+                target_app.display(),
+            );
+
+            fs::write(&updater_script, script_content)
+                .map_err(|e| format!("Gagal menyiapkan skrip instalasi: {}", e))?;
+
+            use std::os::unix::fs::PermissionsExt;
+            let _ = fs::set_permissions(&updater_script, fs::Permissions::from_mode(0o755));
+
+            let _ = std::process::Command::new("sh")
+                .arg(&updater_script)
+                .spawn();
+
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_millis(800));
+                std::process::exit(0);
+            });
+
+            return Ok("Pembaruan berhasil dipasang. Aplikasi akan segera dimulai ulang...".to_string());
+        } else if asset_name.ends_with(".dmg") {
+            let _ = std::process::Command::new("open").arg(&downloaded_file).status();
+            return Ok("Installer DMG berhasil diunduh dan dibuka.".to_string());
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        let status = std::process::Command::new("curl.exe")
+            .arg("-L")
+            .arg("-f")
+            .arg("-s")
+            .arg("-o")
+            .arg(&downloaded_file)
+            .arg(&download_url)
+            .status()
+            .map_err(|e| format!("Gagal mengunduh pembaruan: {}", e))?;
+
+        if !status.success() {
+            return Err("Gagal mengunduh installer Windows".to_string());
+        }
+
+        let _ = std::process::Command::new(&downloaded_file).spawn();
+        std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_millis(1000));
+            std::process::exit(0);
+        });
+
+        return Ok("Installer pembaruan dijalankan. Aplikasi akan ditutup...".to_string());
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        let status = std::process::Command::new("curl")
+            .arg("-L")
+            .arg("-f")
+            .arg("-s")
+            .arg("-o")
+            .arg(&downloaded_file)
+            .arg(&download_url)
+            .status()
+            .map_err(|e| format!("Gagal mengunduh pembaruan: {}", e))?;
+
+        if !status.success() {
+            return Err("Gagal mengunduh berkas pembaruan Linux".to_string());
+        }
+
+        if asset_name.ends_with(".AppImage") {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = fs::set_permissions(&downloaded_file, fs::Permissions::from_mode(0o755));
+            let _ = std::process::Command::new(&downloaded_file).spawn();
+            std::process::exit(0);
+        } else {
+            let _ = open::that(&downloaded_file);
+        }
+
+        return Ok("Berkas pembaruan Linux berhasil diunduh.".to_string());
+    }
+
+    Ok("Proses pembaruan selesai.".to_string())
+}
+
