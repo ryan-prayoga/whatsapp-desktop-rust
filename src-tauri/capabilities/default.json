@@ -11,5 +11,10 @@
     "opener:default",
     "dialog:default",
     "autostart:default"
-  ]
+  ],
+  "remote": {
+    "urls": [
+      "https://web.whatsapp.com/*"
+    ]
+  }
 }

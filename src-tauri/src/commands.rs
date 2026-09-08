@@ -16,13 +16,10 @@ pub fn send_notification(app: AppHandle, title: String, body: String) -> Result<
 #[tauri::command]
 pub fn toggle_always_on_top(app: AppHandle) -> Result<bool, String> {
     if let Some(window) = app.get_webview_window("main") {
-        // Tauri doesn't have a direct is_always_on_top getter on WebviewWindow in some versions,
-        // but we can toggle based on internal state or assume toggle.
-        // Let's toggle state safely:
-        static IS_PINNED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
-        let new_state = !IS_PINNED.load(std::sync::atomic::Ordering::SeqCst);
+        let current = window.is_always_on_top().unwrap_or(false);
+        let new_state = !current;
         window.set_always_on_top(new_state).map_err(|e| e.to_string())?;
-        IS_PINNED.store(new_state, std::sync::atomic::Ordering::SeqCst);
+        println!("📌 Always on Top set to: {}", new_state);
         Ok(new_state)
     } else {
         Err("Main window not found".to_string())

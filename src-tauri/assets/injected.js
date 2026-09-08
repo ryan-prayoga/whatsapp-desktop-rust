@@ -25,7 +25,7 @@
       '#app > div, #app .two { width: 100% !important; height: 100% !important; min-width: 0 !important; max-width: 100% !important; top: 0 !important; margin: 0 !important; border-radius: 0 !important; } ' +
       '#pane-side, div[data-testid="chat-list"] { min-width: 200px !important; -webkit-overflow-scrolling: touch !important; } ' +
       '#main { min-width: 240px !important; -webkit-overflow-scrolling: touch !important; } ' +
-      '#wa-hud-toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(32, 44, 51, 0.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #00a884; border: 1px solid rgba(0, 168, 132, 0.4); border-radius: 20px; padding: 8px 20px; font-size: 12.5px; font-weight: 600; z-index: 9999999; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); pointer-events: none; transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; } ' +
+      '#wa-hud-toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(32, 44, 51, 0.96); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #00a884; border: 1px solid rgba(0, 168, 132, 0.5); border-radius: 20px; padding: 9px 24px; font-size: 13px; font-weight: 600; z-index: 2147483647 !important; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85); pointer-events: none; transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; } ' +
       '@keyframes waFadeIn { from { opacity: 0; } to { opacity: 1; } } ' +
       '@keyframes waSlideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }';
     if (document.head) {
@@ -94,6 +94,7 @@
       document.body.appendChild(toast);
     }
     toast.textContent = msg;
+    toast.style.zIndex = '2147483647';
     toast.style.opacity = '1';
     toast.style.transform = 'translateX(-50%) translateY(4px)';
     clearTimeout(toast._timer);
@@ -106,10 +107,14 @@
 
   // --- 4. Tauri IPC Helper ---
   function invokeBackend(cmd, args) {
+    args = args || {};
     if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
       return window.__TAURI__.core.invoke(cmd, args);
     }
-    console.log('[Tauri IPC fallback]', cmd, args);
+    if (window.__TAURI_INTERNALS__ && window.__TAURI_INTERNALS__.invoke) {
+      return window.__TAURI_INTERNALS__.invoke(cmd, args);
+    }
+    console.warn('[Tauri IPC fallback] No global Tauri found yet for command:', cmd);
     return Promise.resolve(null);
   }
 
@@ -361,7 +366,7 @@
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);z-index:9999999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#e9edef;animation:waFadeIn 0.2s ease;';
 
     var modal = document.createElement('div');
-    modal.style.cssText = 'width:520px;max-width:96vw;background:#111b21;border:1px solid #2a3942;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.85);padding:22px;display:flex;flex-direction:column;gap:14px;';
+    modal.style.cssText = 'width:530px;max-width:96vw;background:#111b21;border:1px solid #2a3942;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.85);padding:22px;display:flex;flex-direction:column;gap:14px;';
 
     modal.innerHTML = '' +
       '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a3942;padding-bottom:12px;">' +
@@ -376,20 +381,41 @@
       '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
       '  <div style="background:#202c33;padding:12px;border-radius:8px;border:1px solid #2a3942;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
-      '    <div><strong style="font-size:12.5px;">🔒 Mode Privasi</strong><div style="font-size:11px;color:#8696a0;">Blur pesan & media.</div></div>' +
-      '    <button id="btn-toggle-priv" style="background:#111b21;border:1px solid #2a3942;color:#00a884;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Toggle (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+P)</button>' +
+      '    <div>' +
+      '      <div style="display:flex;align-items:center;justify-content:space-between;">' +
+      '        <strong style="font-size:12.5px;">🔒 Mode Privasi</strong>' +
+      '        <span id="badge-priv" style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;background:rgba(255,255,255,0.08);color:#8696a0;">Nonaktif</span>' +
+      '      </div>' +
+      '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Blur pesan & media.</div>' +
+      '    </div>' +
+      '    <button id="btn-toggle-priv" style="background:#111b21;border:1px solid #2a3942;color:#00a884;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Aktifkan (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+P)</button>' +
       '  </div>' +
       '  <div style="background:#202c33;padding:12px;border-radius:8px;border:1px solid #2a3942;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
-      '    <div><strong style="font-size:12.5px;">📌 Pin Jendela</strong><div style="font-size:11px;color:#8696a0;">Selalu di barisan depan.</div></div>' +
-      '    <button id="btn-toggle-pin" style="background:#111b21;border:1px solid #2a3942;color:#00a884;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Toggle (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+T)</button>' +
+      '    <div>' +
+      '      <div style="display:flex;align-items:center;justify-content:space-between;">' +
+      '        <strong style="font-size:12.5px;">📌 Pin Jendela</strong>' +
+      '        <span id="badge-pin" style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;background:rgba(255,255,255,0.08);color:#8696a0;">Nonaktif</span>' +
+      '      </div>' +
+      '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Selalu di barisan depan.</div>' +
+      '    </div>' +
+      '    <button id="btn-toggle-pin" style="background:#111b21;border:1px solid #2a3942;color:#00a884;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Pin (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+T)</button>' +
       '  </div>' +
       '  <div style="background:#202c33;padding:12px;border-radius:8px;border:1px solid #2a3942;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
-      '    <div><strong style="font-size:12.5px;">🔇 Audio Notifikasi</strong><div style="font-size:11px;color:#8696a0;">Senyapkan semua suara.</div></div>' +
-      '    <button id="btn-toggle-mute" style="background:#111b21;border:1px solid #2a3942;color:#00a884;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Toggle (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+M)</button>' +
+      '    <div>' +
+      '      <div style="display:flex;align-items:center;justify-content:space-between;">' +
+      '        <strong style="font-size:12.5px;">🔇 Audio Notifikasi</strong>' +
+      '        <span id="badge-mute" style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;background:rgba(0,168,132,0.15);color:#00a884;">Bersuara</span>' +
+      '      </div>' +
+      '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Senyapkan semua suara.</div>' +
+      '    </div>' +
+      '    <button id="btn-toggle-mute" style="background:#111b21;border:1px solid #2a3942;color:#00a884;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Senyapkan (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+M)</button>' +
       '  </div>' +
       '  <div style="background:#202c33;padding:12px;border-radius:8px;border:1px solid #2a3942;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
-      '    <div><strong style="font-size:12.5px;">📁 Folder Unduhan</strong><div style="font-size:11px;color:#8696a0;">Buka berkas tersimpan.</div></div>' +
-      '    <button id="btn-open-folder" style="background:#00a884;border:none;color:#111b21;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">' + (isMac ? 'Buka di Finder' : 'Buka Folder') + '</button>' +
+      '    <div>' +
+      '      <strong style="font-size:12.5px;">📁 Folder Unduhan</strong>' +
+      '      <div style="font-size:11px;color:#8696a0;margin-top:2px;">Buka berkas tersimpan.</div>' +
+      '    </div>' +
+      '    <button id="btn-open-folder" style="background:#00a884;border:none;color:#111b21;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">' + (isMac ? 'Buka di Finder' : 'Buka Folder') + '</button>' +
       '  </div>' +
       '</div>' +
       '<div style="display:flex;justify-content:flex-end;margin-top:4px;">' +
@@ -399,6 +425,40 @@
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
+    function updateModalUI() {
+      var isPriv = window.isPrivacyModeActive ? window.isPrivacyModeActive() : false;
+      var isPin = window.isAlwaysOnTopActive ? window.isAlwaysOnTopActive() : false;
+      var isMute = window.isAudioMuted ? window.isAudioMuted() : false;
+
+      var bPriv = document.getElementById('badge-priv');
+      var btnPriv = document.getElementById('btn-toggle-priv');
+      if (bPriv && btnPriv) {
+        bPriv.textContent = isPriv ? 'Aktif' : 'Nonaktif';
+        bPriv.style.background = isPriv ? 'rgba(0,168,132,0.15)' : 'rgba(255,255,255,0.08)';
+        bPriv.style.color = isPriv ? '#00a884' : '#8696a0';
+        btnPriv.textContent = isPriv ? 'Matikan' : 'Aktifkan (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+P)';
+      }
+
+      var bPin = document.getElementById('badge-pin');
+      var btnPin = document.getElementById('btn-toggle-pin');
+      if (bPin && btnPin) {
+        bPin.textContent = isPin ? 'Aktif' : 'Nonaktif';
+        bPin.style.background = isPin ? 'rgba(0,168,132,0.15)' : 'rgba(255,255,255,0.08)';
+        bPin.style.color = isPin ? '#00a884' : '#8696a0';
+        btnPin.textContent = isPin ? 'Lepas Pin' : 'Pin (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+T)';
+      }
+
+      var bMute = document.getElementById('badge-mute');
+      var btnMute = document.getElementById('btn-toggle-mute');
+      if (bMute && btnMute) {
+        bMute.textContent = isMute ? 'Senyap' : 'Bersuara';
+        bMute.style.background = isMute ? 'rgba(234,0,56,0.15)' : 'rgba(0,168,132,0.15)';
+        bMute.style.color = isMute ? '#ff5252' : '#00a884';
+        btnMute.textContent = isMute ? 'Bunyikan' : 'Senyapkan (' + (isMac ? 'Cmd' : 'Ctrl') + '+Shift+M)';
+      }
+    }
+    updateModalUI();
+
     function closeModal() {
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     }
@@ -407,9 +467,17 @@
     document.getElementById('wa-btn-done').onclick = closeModal;
     overlay.onclick = function(e) { if (e.target === overlay) closeModal(); };
 
-    document.getElementById('btn-toggle-priv').onclick = function() { window.togglePrivacyMode(); };
-    document.getElementById('btn-toggle-pin').onclick = function() { window.toggleAlwaysOnTop(); };
-    document.getElementById('btn-toggle-mute').onclick = function() { window.toggleMuteAudio(); };
+    document.getElementById('btn-toggle-priv').onclick = function() {
+      window.togglePrivacyMode();
+      updateModalUI();
+    };
+    document.getElementById('btn-toggle-pin').onclick = function() {
+      window.toggleAlwaysOnTop().then(updateModalUI);
+    };
+    document.getElementById('btn-toggle-mute').onclick = function() {
+      window.toggleMuteAudio();
+      updateModalUI();
+    };
     document.getElementById('btn-open-folder').onclick = function() {
       invokeBackend('open_download_dir');
       closeModal();

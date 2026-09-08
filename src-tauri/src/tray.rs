@@ -1,7 +1,7 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Emitter, Manager,
+    AppHandle, Manager,
 };
 
 pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
@@ -40,13 +40,17 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             "pin" => {
-                let _ = app.emit("tray-toggle-pin", ());
+                let _ = crate::commands::toggle_always_on_top(app.clone());
             }
             "privacy" => {
-                let _ = app.emit("tray-toggle-privacy", ());
+                if let Some(win) = app.get_webview_window("main") {
+                    let _ = win.eval("if (window.togglePrivacyMode) window.togglePrivacyMode();");
+                }
             }
             "mute" => {
-                let _ = app.emit("tray-toggle-mute", ());
+                if let Some(win) = app.get_webview_window("main") {
+                    let _ = win.eval("if (window.toggleMuteAudio) window.toggleMuteAudio();");
+                }
             }
             "downloads" => {
                 let _ = crate::commands::open_download_dir();
