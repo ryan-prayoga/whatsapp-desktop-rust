@@ -39,26 +39,18 @@
       '@keyframes waFadeIn { from { opacity: 0; } to { opacity: 1; } } ' +
       '@keyframes waSlideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } } ' +
       '@keyframes waProgressIndeterminate { 0% { transform: translateX(-100%); } 50% { transform: translateX(0%); } 100% { transform: translateX(100%); } } ' +
-      'html.wa-force-light, html.wa-force-light body, html.wa-force-light body.dark, html.wa-force-light #app, html.wa-force-light .dark { ' +
-      '  --background-default: #ffffff !important; --background-default-hover: #f5f6f6 !important; --background-default-active: #ebebeb !important; ' +
-      '  --app-background: #eae6df !important; --app-background-stripe: #00a884 !important; --panel-background: #ffffff !important; ' +
-      '  --panel-background-lighter: #ffffff !important; --panel-background-colored: #008069 !important; --panel-background-deep: #f0f2f5 !important; ' +
-      '  --panel-header-background: #f0f2f5 !important; --panel-header-icon: #54656f !important; --conversation-panel-background: #efeae2 !important; ' +
-      '  --conversation-panel-border: rgba(11, 20, 26, 0.08) !important; --border-default: #e9edef !important; --border-list: #e9edef !important; ' +
-      '  --border-strong: #d1d7db !important; --border-stronger: #8696a0 !important; --primary-strong: #111b21 !important; ' +
-      '  --primary: #111b21 !important; --primary-title: #111b21 !important; --secondary: #667781 !important; ' +
-      '  --secondary-stronger: #3b4a54 !important; --secondary-lighter: #8696a0 !important; --message-primary: #111b21 !important; ' +
-      '  --message-secondary: #667781 !important; --incoming-background: #ffffff !important; --incoming-background-rgb: 255, 255, 255 !important; ' +
-      '  --incoming-primary: #111b21 !important; --outgoing-background: #d9fdd3 !important; --outgoing-background-rgb: 217, 253, 211 !important; ' +
-      '  --outgoing-primary: #111b21 !important; --system-message-background: #ffffff !important; --system-message-text: #54656f !important; ' +
-      '  --dropdown-background: #ffffff !important; --dropdown-background-hover: #f5f6f6 !important; --modal-backdrop: rgba(11, 20, 26, 0.4) !important; ' +
-      '  --modal-background: #ffffff !important; --search-input-background: #f0f2f5 !important; --compose-input-background: #ffffff !important; ' +
-      '  --compose-input-border: #ffffff !important; --chat-marker-admin: #008069 !important; --intro-background: #f0f2f5 !important; ' +
-      '  --intro-border: #00a884 !important; --icon-lighter: #8696a0 !important; --icon: #54656f !important; --icon-fixed: #54656f !important; ' +
-      '  color-scheme: light !important; ' +
-      '} ' +
-      'html.wa-force-light body { background-color: #eae6df !important; } ' +
-      'html.wa-force-dark, html.wa-force-dark body, html.wa-force-dark body.light, html.wa-force-dark #app, html.wa-force-dark .light { ' +
+      'html.wa-force-dark, html.wa-force-dark body, html.wa-force-dark #app, html.wa-force-dark .app-wrapper, html.wa-force-dark #main, html.wa-force-dark #pane-side { ' +
+      '  --WDS-app-wash: #0c1317 !important; --WDS-background-wash-plain: #111b21 !important; --WDS-background-wash-inset: #202c33 !important; ' +
+      '  --WDS-background-elevated-wash-plain: #202c33 !important; --WDS-background-elevated-wash-inset: #111b21 !important; ' +
+      '  --WDS-background-dimmer: rgba(11, 20, 26, 0.7) !important; --WDS-surface-elevated-default: #202c33 !important; ' +
+      '  --WDS-components-surface-nav-bar: #202c33 !important; --WDS-components-active-list-row: #202c33 !important; ' +
+      '  --WDS-components-filter-surface-selected: #00a884 !important; --WDS-content-default: #e9edef !important; ' +
+      '  --WDS-content-deemphasized: #8696a0 !important; --WDS-content-action-default: #00a884 !important; ' +
+      '  --WDS-content-action-emphasized: #00a884 !important; --WDS-content-inverse: #111b21 !important; ' +
+      '  --WDS-content-disabled: #667781 !important; --WDS-content-on-accent: #111b21 !important; ' +
+      '  --WDS-lines-divider: #222d34 !important; --WDS-lines-outline-deemphasized: #222d34 !important; ' +
+      '  --WDS-accent: #00a884 !important; --WDS-accent-deemphasized: rgba(0, 168, 132, 0.15) !important; ' +
+      '  --WDS-accent-emphasized: #00c298 !important; ' +
       '  --background-default: #111b21 !important; --background-default-hover: #202c33 !important; --background-default-active: #222e35 !important; ' +
       '  --app-background: #0c1317 !important; --app-background-stripe: #00a884 !important; --panel-background: #111b21 !important; ' +
       '  --panel-background-lighter: #202c33 !important; --panel-background-colored: #202c33 !important; --panel-background-deep: #111b21 !important; ' +
@@ -76,7 +68,37 @@
       '  --intro-border: #00a884 !important; --icon-lighter: #8696a0 !important; --icon: #aebac1 !important; --icon-fixed: #aebac1 !important; ' +
       '  color-scheme: dark !important; ' +
       '} ' +
-      'html.wa-force-dark body { background-color: #0c1317 !important; }';
+      'html.wa-force-dark body { background-color: #0c1317 !important; color: #e9edef !important; } ' +
+      'html.wa-force-light, html.wa-force-light body, html.wa-force-light #app, html.wa-force-light .app-wrapper, html.wa-force-light #main, html.wa-force-light #pane-side { ' +
+      '  --WDS-app-wash: #eae6df !important; --WDS-background-wash-plain: #ffffff !important; --WDS-background-wash-inset: #f0f2f5 !important; ' +
+      '  --WDS-background-elevated-wash-plain: #ffffff !important; --WDS-background-elevated-wash-inset: #f0f2f5 !important; ' +
+      '  --WDS-background-dimmer: rgba(11, 20, 26, 0.4) !important; --WDS-surface-elevated-default: #ffffff !important; ' +
+      '  --WDS-components-surface-nav-bar: #f0f2f5 !important; --WDS-components-active-list-row: #f0f2f5 !important; ' +
+      '  --WDS-components-filter-surface-selected: #008069 !important; --WDS-content-default: #111b21 !important; ' +
+      '  --WDS-content-deemphasized: #667781 !important; --WDS-content-action-default: #008069 !important; ' +
+      '  --WDS-content-action-emphasized: #008069 !important; --WDS-content-inverse: #ffffff !important; ' +
+      '  --WDS-content-disabled: #8696a0 !important; --WDS-content-on-accent: #ffffff !important; ' +
+      '  --WDS-lines-divider: #e9edef !important; --WDS-lines-outline-deemphasized: #e9edef !important; ' +
+      '  --WDS-accent: #008069 !important; --WDS-accent-deemphasized: rgba(0, 128, 105, 0.15) !important; ' +
+      '  --WDS-accent-emphasized: #00a884 !important; ' +
+      '  --background-default: #ffffff !important; --background-default-hover: #f5f6f6 !important; --background-default-active: #ebebeb !important; ' +
+      '  --app-background: #eae6df !important; --app-background-stripe: #00a884 !important; --panel-background: #ffffff !important; ' +
+      '  --panel-background-lighter: #ffffff !important; --panel-background-colored: #008069 !important; --panel-background-deep: #f0f2f5 !important; ' +
+      '  --panel-header-background: #f0f2f5 !important; --panel-header-icon: #54656f !important; --conversation-panel-background: #efeae2 !important; ' +
+      '  --conversation-panel-border: rgba(11, 20, 26, 0.08) !important; --border-default: #e9edef !important; --border-list: #e9edef !important; ' +
+      '  --border-strong: #d1d7db !important; --border-stronger: #8696a0 !important; --primary-strong: #111b21 !important; ' +
+      '  --primary: #111b21 !important; --primary-title: #111b21 !important; --secondary: #667781 !important; ' +
+      '  --secondary-stronger: #3b4a54 !important; --secondary-lighter: #8696a0 !important; --message-primary: #111b21 !important; ' +
+      '  --message-secondary: #667781 !important; --incoming-background: #ffffff !important; --incoming-background-rgb: 255, 255, 255 !important; ' +
+      '  --incoming-primary: #111b21 !important; --outgoing-background: #d9fdd3 !important; --outgoing-background-rgb: 217, 253, 211 !important; ' +
+      '  --outgoing-primary: #111b21 !important; --system-message-background: #ffffff !important; --system-message-text: #54656f !important; ' +
+      '  --dropdown-background: #ffffff !important; --dropdown-background-hover: #f5f6f6 !important; --modal-backdrop: rgba(11, 20, 26, 0.4) !important; ' +
+      '  --modal-background: #ffffff !important; --search-input-background: #f0f2f5 !important; --compose-input-background: #ffffff !important; ' +
+      '  --compose-input-border: #ffffff !important; --chat-marker-admin: #008069 !important; --intro-background: #f0f2f5 !important; ' +
+      '  --intro-border: #00a884 !important; --icon-lighter: #8696a0 !important; --icon: #54656f !important; --icon-fixed: #54656f !important; ' +
+      '  color-scheme: light !important; ' +
+      '} ' +
+      'html.wa-force-light body { background-color: #eae6df !important; color: #111b21 !important; }';
     if (document.head) {
       document.head.appendChild(style);
     } else {
@@ -421,6 +443,22 @@
     return true;
   }
 
+  function syncWhatsAppInternalTheme(theme) {
+    try {
+      if (typeof window.require === 'function') {
+        var mod = null;
+        try { mod = window.require('WAWebUserPrefsGeneral'); } catch (e) {}
+        if (!mod) {
+          try { mod = window.require('UserPrefsGeneral'); } catch (e) {}
+        }
+        if (mod && typeof mod.setTheme === 'function') {
+          var target = (theme === 'system') ? 'system' : (theme === 'dark' ? 'dark' : 'light');
+          mod.setTheme(target);
+        }
+      }
+    } catch (e) {}
+  }
+
   function applyThemeToDOM(theme) {
     currentTheme = theme;
     try { localStorage.setItem('wa_desk_theme', theme); } catch (e) {}
@@ -451,6 +489,12 @@
         document.body.classList.add('light');
       }
     }
+
+    // Update native window appearance & WKWebView prefers-color-scheme
+    invokeBackend('set_native_theme', { theme: theme });
+
+    // Sync WhatsApp internal module if available
+    syncWhatsAppInternalTheme(theme);
 
     if (window.syncModalTheme) {
       window.syncModalTheme(isDark);
@@ -488,6 +532,19 @@
   initTheme();
   document.addEventListener('DOMContentLoaded', initTheme);
   window.addEventListener('load', initTheme);
+
+  setInterval(function() {
+    if (document.body) {
+      var isDark = (currentTheme === 'system') ? getSystemIsDark() : (currentTheme === 'dark');
+      if (isDark) {
+        if (!document.body.classList.contains('dark')) document.body.classList.add('dark');
+        if (document.body.classList.contains('light')) document.body.classList.remove('light');
+      } else {
+        if (document.body.classList.contains('dark')) document.body.classList.remove('dark');
+        if (!document.body.classList.contains('light')) document.body.classList.add('light');
+      }
+    }
+  }, 2000);
 
   // --- 13. AutoStart & Download Directory IPC Helpers ---
   window.isAutoStartActive = false;
@@ -850,7 +907,7 @@
       '    </div>' +
       '    <div>' +
       '      <h3 id="wa-modal-title" style="margin:0;font-size:15px;font-weight:600;">WhatsApp Desk</h3>' +
-      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.3</span>' +
+      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.4</span>' +
       '    </div>' +
       '  </div>' +
       '  <button id="wa-settings-close-x" style="background:transparent;border:none;cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;">' + ICONS.close + '</button>' +
@@ -1198,7 +1255,7 @@
         .then(function(data) {
           var latestTag = (data.tag_name || '').trim();
           var latestVer = latestTag.replace(/^v/, '').trim();
-          var currentVer = '0.2.3';
+          var currentVer = '0.2.4';
           if (latestVer && latestVer !== currentVer) {
             var asset = findPlatformAsset(data.assets);
             if (asset && asset.browser_download_url) {

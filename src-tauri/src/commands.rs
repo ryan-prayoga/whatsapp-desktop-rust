@@ -434,3 +434,17 @@ pub async fn download_and_install_update(
     Ok("Proses pembaruan selesai.".to_string())
 }
 
+#[tauri::command]
+pub fn set_native_theme(app: AppHandle, theme: String) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        let t = match theme.to_lowercase().as_str() {
+            "dark" => Some(tauri::Theme::Dark),
+            "light" => Some(tauri::Theme::Light),
+            _ => None,
+        };
+        window.set_theme(t).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+

@@ -39,6 +39,7 @@ pub fn run() {
         commands::get_autostart_status,
         commands::toggle_autostart,
         commands::download_and_install_update,
+        commands::set_native_theme,
     ]);
 
     // 3. Setup & App Lifecycle
