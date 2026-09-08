@@ -10,7 +10,13 @@
     "notification:default",
     "opener:default",
     "dialog:default",
-    "autostart:default"
+    "autostart:default",
+    "allow-open-download-dir",
+    "allow-open-external-url",
+    "allow-save-downloaded-file",
+    "allow-send-notification",
+    "allow-toggle-always-on-top",
+    "allow-update-dock-badge"
   ],
   "remote": {
     "urls": [
