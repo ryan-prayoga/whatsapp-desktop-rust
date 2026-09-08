@@ -1,0 +1,11 @@
+# Rust & Tauri
+/src-tauri/target
+target/
+
+# Node & Build
+node_modules/
+
+# OS & Environment
+.DS_Store
+Thumbs.db
+*.local

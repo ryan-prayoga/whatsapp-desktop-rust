@@ -1,0 +1,80 @@
+/* WhatsApp Desktop Rust - Injected Styles */
+
+/* 1. Privacy Mode Blur */
+.privacy-mode #main .copyable-text,
+.privacy-mode #main img,
+.privacy-mode #main video,
+.privacy-mode #pane-side span[title] {
+  filter: blur(8px) !important;
+  transition: filter 0.15s ease-in-out;
+}
+
+.privacy-mode #main .copyable-text:hover,
+.privacy-mode #main img:hover,
+.privacy-mode #main video:hover,
+.privacy-mode #pane-side span[title]:hover {
+  filter: none !important;
+}
+
+/* 2. Responsive adjustments */
+html, body, #app {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app > div, #app .two {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  top: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+#pane-side, div[data-testid="chat-list"] {
+  min-width: 200px !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+#main {
+  min-width: 240px !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* 3. Floating HUD Toast */
+#wa-hud-toast {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(32, 44, 51, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #00a884;
+  border: 1px solid rgba(0, 168, 132, 0.4);
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  z-index: 9999999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* 4. Animations */
+@keyframes waFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes waSlideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Desk</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #111b21;
+      color: #e9edef;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(0, 168, 132, 0.2);
+      border-radius: 50%;
+      border-top-color: #00a884;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    h2 { font-size: 1.25rem; font-weight: 500; margin: 0 0 8px; }
+    p { color: #8696a0; font-size: 0.9rem; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <h2>WhatsApp Desk</h2>
+  <p>Menghubungkan ke WhatsApp Web...</p>
+</body>
+</html>
