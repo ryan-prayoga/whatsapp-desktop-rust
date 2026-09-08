@@ -13,61 +13,11 @@
       ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
       : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36');
 
-  // --- 1c. Early prefers-color-scheme Override ---
+  // --- 1c. Current Theme Preference ---
   var currentTheme = 'system';
   try {
     currentTheme = localStorage.getItem('wa_desk_theme') || 'system';
   } catch(e) {}
-
-  var mediaQueryListeners = [];
-  var origMatchMedia = window.matchMedia;
-  if (origMatchMedia) {
-    window.matchMedia = function(query) {
-      var res = origMatchMedia.apply(this, arguments);
-      if (query && typeof query === 'string' && query.indexOf('prefers-color-scheme') >= 0) {
-        var isDarkQuery = query.indexOf('dark') >= 0;
-        var forcedMatches = isDarkQuery;
-        if (currentTheme === 'light') {
-          forcedMatches = !isDarkQuery;
-        } else if (currentTheme === 'dark') {
-          forcedMatches = isDarkQuery;
-        } else {
-          forcedMatches = res ? res.matches : isDarkQuery;
-        }
-
-        return {
-          matches: forcedMatches,
-          media: query,
-          addEventListener: function(t, fn) {
-            if (t === 'change' && typeof fn === 'function' && mediaQueryListeners.indexOf(fn) === -1) {
-              mediaQueryListeners.push(fn);
-            }
-            if (res && res.addEventListener) res.addEventListener(t, fn);
-            else if (res && res.addListener) res.addListener(fn);
-          },
-          removeEventListener: function(t, fn) {
-            var idx = mediaQueryListeners.indexOf(fn);
-            if (idx >= 0) mediaQueryListeners.splice(idx, 1);
-            if (res && res.removeEventListener) res.removeEventListener(t, fn);
-            else if (res && res.removeListener) res.removeListener(fn);
-          },
-          addListener: function(fn) {
-            if (typeof fn === 'function' && mediaQueryListeners.indexOf(fn) === -1) {
-              mediaQueryListeners.push(fn);
-            }
-            if (res && res.addListener) res.addListener(fn);
-          },
-          removeListener: function(fn) {
-            var idx = mediaQueryListeners.indexOf(fn);
-            if (idx >= 0) mediaQueryListeners.splice(idx, 1);
-            if (res && res.removeListener) res.removeListener(fn);
-          },
-          onchange: null
-        };
-      }
-      return res;
-    };
-  }
 
   // --- 1b. Inject CSS Stylesheet ---
   function injectStyles() {
@@ -88,7 +38,45 @@
       '.wa-theme-btn:hover, .wa-card-btn:hover { filter: brightness(1.15); } ' +
       '@keyframes waFadeIn { from { opacity: 0; } to { opacity: 1; } } ' +
       '@keyframes waSlideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } } ' +
-      '@keyframes waProgressIndeterminate { 0% { transform: translateX(-100%); } 50% { transform: translateX(0%); } 100% { transform: translateX(100%); } }';
+      '@keyframes waProgressIndeterminate { 0% { transform: translateX(-100%); } 50% { transform: translateX(0%); } 100% { transform: translateX(100%); } } ' +
+      'html.wa-force-light, html.wa-force-light body, html.wa-force-light body.dark, html.wa-force-light #app, html.wa-force-light .dark { ' +
+      '  --background-default: #ffffff !important; --background-default-hover: #f5f6f6 !important; --background-default-active: #ebebeb !important; ' +
+      '  --app-background: #eae6df !important; --app-background-stripe: #00a884 !important; --panel-background: #ffffff !important; ' +
+      '  --panel-background-lighter: #ffffff !important; --panel-background-colored: #008069 !important; --panel-background-deep: #f0f2f5 !important; ' +
+      '  --panel-header-background: #f0f2f5 !important; --panel-header-icon: #54656f !important; --conversation-panel-background: #efeae2 !important; ' +
+      '  --conversation-panel-border: rgba(11, 20, 26, 0.08) !important; --border-default: #e9edef !important; --border-list: #e9edef !important; ' +
+      '  --border-strong: #d1d7db !important; --border-stronger: #8696a0 !important; --primary-strong: #111b21 !important; ' +
+      '  --primary: #111b21 !important; --primary-title: #111b21 !important; --secondary: #667781 !important; ' +
+      '  --secondary-stronger: #3b4a54 !important; --secondary-lighter: #8696a0 !important; --message-primary: #111b21 !important; ' +
+      '  --message-secondary: #667781 !important; --incoming-background: #ffffff !important; --incoming-background-rgb: 255, 255, 255 !important; ' +
+      '  --incoming-primary: #111b21 !important; --outgoing-background: #d9fdd3 !important; --outgoing-background-rgb: 217, 253, 211 !important; ' +
+      '  --outgoing-primary: #111b21 !important; --system-message-background: #ffffff !important; --system-message-text: #54656f !important; ' +
+      '  --dropdown-background: #ffffff !important; --dropdown-background-hover: #f5f6f6 !important; --modal-backdrop: rgba(11, 20, 26, 0.4) !important; ' +
+      '  --modal-background: #ffffff !important; --search-input-background: #f0f2f5 !important; --compose-input-background: #ffffff !important; ' +
+      '  --compose-input-border: #ffffff !important; --chat-marker-admin: #008069 !important; --intro-background: #f0f2f5 !important; ' +
+      '  --intro-border: #00a884 !important; --icon-lighter: #8696a0 !important; --icon: #54656f !important; --icon-fixed: #54656f !important; ' +
+      '  color-scheme: light !important; ' +
+      '} ' +
+      'html.wa-force-light body { background-color: #eae6df !important; } ' +
+      'html.wa-force-dark, html.wa-force-dark body, html.wa-force-dark body.light, html.wa-force-dark #app, html.wa-force-dark .light { ' +
+      '  --background-default: #111b21 !important; --background-default-hover: #202c33 !important; --background-default-active: #222e35 !important; ' +
+      '  --app-background: #0c1317 !important; --app-background-stripe: #00a884 !important; --panel-background: #111b21 !important; ' +
+      '  --panel-background-lighter: #202c33 !important; --panel-background-colored: #202c33 !important; --panel-background-deep: #111b21 !important; ' +
+      '  --panel-header-background: #202c33 !important; --panel-header-icon: #aebac1 !important; --conversation-panel-background: #0b141a !important; ' +
+      '  --conversation-panel-border: rgba(134, 150, 160, 0.15) !important; --border-default: #222d34 !important; --border-list: #222d34 !important; ' +
+      '  --border-strong: #2a3942 !important; --border-stronger: #8696a0 !important; --primary-strong: #e9edef !important; ' +
+      '  --primary: #e9edef !important; --primary-title: #e9edef !important; --secondary: #8696a0 !important; ' +
+      '  --secondary-stronger: #aebac1 !important; --secondary-lighter: #667781 !important; --message-primary: #e9edef !important; ' +
+      '  --message-secondary: #8696a0 !important; --incoming-background: #202c33 !important; --incoming-background-rgb: 32, 44, 51 !important; ' +
+      '  --incoming-primary: #e9edef !important; --outgoing-background: #005c4b !important; --outgoing-background-rgb: 0, 92, 75 !important; ' +
+      '  --outgoing-primary: #e9edef !important; --system-message-background: #182229 !important; --system-message-text: #8696a0 !important; ' +
+      '  --dropdown-background: #233138 !important; --dropdown-background-hover: #182229 !important; --modal-backdrop: rgba(11, 20, 26, 0.7) !important; ' +
+      '  --modal-background: #222e35 !important; --search-input-background: #202c33 !important; --compose-input-background: #2a3942 !important; ' +
+      '  --compose-input-border: #2a3942 !important; --chat-marker-admin: #00a884 !important; --intro-background: #111b21 !important; ' +
+      '  --intro-border: #00a884 !important; --icon-lighter: #8696a0 !important; --icon: #aebac1 !important; --icon-fixed: #aebac1 !important; ' +
+      '  color-scheme: dark !important; ' +
+      '} ' +
+      'html.wa-force-dark body { background-color: #0c1317 !important; }';
     if (document.head) {
       document.head.appendChild(style);
     } else {
@@ -424,13 +412,12 @@
   })();
 
   // --- 12. Theme Management ---
-  var themeObserver = null;
-  var isApplyingTheme = false;
-
   function getSystemIsDark() {
-    if (origMatchMedia) {
-      return origMatchMedia.call(window, '(prefers-color-scheme: dark)').matches;
-    }
+    try {
+      if (window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+    } catch (e) {}
     return true;
   }
 
@@ -440,84 +427,33 @@
 
     var isDark = (theme === 'system') ? getSystemIsDark() : (theme === 'dark');
 
-    isApplyingTheme = true;
-    try {
-      // 1. Update documentElement & body classes
+    var root = document.documentElement;
+    if (root) {
       if (isDark) {
-        document.documentElement.classList.add('dark');
-        document.documentElement.classList.remove('light');
-        if (document.body) {
-          document.body.classList.add('dark');
-          document.body.classList.remove('light');
-        }
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.style.colorScheme = 'dark';
+        root.classList.remove('wa-force-light');
+        root.classList.add('wa-force-dark');
+        root.setAttribute('data-theme', 'dark');
+        root.style.colorScheme = 'dark';
       } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.classList.add('light');
-        if (document.body) {
-          document.body.classList.remove('dark');
-          document.body.classList.add('light');
-        }
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.style.colorScheme = 'light';
+        root.classList.remove('wa-force-dark');
+        root.classList.add('wa-force-light');
+        root.setAttribute('data-theme', 'light');
+        root.style.colorScheme = 'light';
       }
-
-      // 2. Synchronize WhatsApp Web's own localStorage keys
-      try {
-        if (theme === 'system') {
-          localStorage.setItem('system-theme-mode', 'true');
-          localStorage.setItem('theme', JSON.stringify(isDark ? 'dark' : 'light'));
-        } else {
-          localStorage.setItem('system-theme-mode', 'false');
-          localStorage.setItem('theme', JSON.stringify(theme));
-        }
-      } catch(e) {}
-
-      // 3. Notify media query listeners
-      mediaQueryListeners.forEach(function(fn) {
-        try {
-          fn({ matches: isDark, media: '(prefers-color-scheme: dark)' });
-        } catch(e) {}
-      });
-
-      // 4. Update modal UI if open
-      if (window.syncModalTheme) {
-        window.syncModalTheme(isDark);
-      }
-    } finally {
-      isApplyingTheme = false;
     }
 
-    // 5. Ensure MutationObserver prevents WhatsApp from reverting body/documentElement theme class
-    if (window.MutationObserver && document.body) {
-      if (!themeObserver) {
-        themeObserver = new MutationObserver(function() {
-          if (isApplyingTheme) return;
-          var shouldBeDark = (currentTheme === 'system') ? getSystemIsDark() : (currentTheme === 'dark');
-          isApplyingTheme = true;
-          try {
-            if (shouldBeDark) {
-              if (!document.documentElement.classList.contains('dark')) document.documentElement.classList.add('dark');
-              document.documentElement.classList.remove('light');
-              if (document.body && !document.body.classList.contains('dark')) document.body.classList.add('dark');
-              if (document.body) document.body.classList.remove('light');
-            } else {
-              document.documentElement.classList.remove('dark');
-              if (!document.documentElement.classList.contains('light')) document.documentElement.classList.add('light');
-              if (document.body) {
-                document.body.classList.remove('dark');
-                if (!document.body.classList.contains('light')) document.body.classList.add('light');
-              }
-            }
-          } finally {
-            isApplyingTheme = false;
-          }
-        });
+    if (document.body) {
+      if (isDark) {
+        document.body.classList.remove('light');
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+        document.body.classList.add('light');
       }
-      themeObserver.disconnect();
-      themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    if (window.syncModalTheme) {
+      window.syncModalTheme(isDark);
     }
   }
 
@@ -530,19 +466,21 @@
   };
 
   // Listen for system appearance changes
-  if (origMatchMedia) {
-    var sysMedia = origMatchMedia.call(window, '(prefers-color-scheme: dark)');
-    var onSysChange = function() {
-      if (currentTheme === 'system') {
-        applyThemeToDOM('system');
+  try {
+    if (window.matchMedia) {
+      var sysMedia = window.matchMedia('(prefers-color-scheme: dark)');
+      var onSysChange = function() {
+        if (currentTheme === 'system') {
+          applyThemeToDOM('system');
+        }
+      };
+      if (sysMedia.addEventListener) {
+        sysMedia.addEventListener('change', onSysChange);
+      } else if (sysMedia.addListener) {
+        sysMedia.addListener(onSysChange);
       }
-    };
-    if (sysMedia.addEventListener) {
-      sysMedia.addEventListener('change', onSysChange);
-    } else if (sysMedia.addListener) {
-      sysMedia.addListener(onSysChange);
     }
-  }
+  } catch (e) {}
 
   function initTheme() {
     applyThemeToDOM(currentTheme);
@@ -550,11 +488,6 @@
   initTheme();
   document.addEventListener('DOMContentLoaded', initTheme);
   window.addEventListener('load', initTheme);
-  setInterval(function() {
-    if (document.body && !themeObserver) {
-      applyThemeToDOM(currentTheme);
-    }
-  }, 2000);
 
   // --- 13. AutoStart & Download Directory IPC Helpers ---
   window.isAutoStartActive = false;
@@ -917,7 +850,7 @@
       '    </div>' +
       '    <div>' +
       '      <h3 id="wa-modal-title" style="margin:0;font-size:15px;font-weight:600;">WhatsApp Desk</h3>' +
-      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.2</span>' +
+      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.3</span>' +
       '    </div>' +
       '  </div>' +
       '  <button id="wa-settings-close-x" style="background:transparent;border:none;cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;">' + ICONS.close + '</button>' +
@@ -1265,7 +1198,7 @@
         .then(function(data) {
           var latestTag = (data.tag_name || '').trim();
           var latestVer = latestTag.replace(/^v/, '').trim();
-          var currentVer = '0.2.2';
+          var currentVer = '0.2.3';
           if (latestVer && latestVer !== currentVer) {
             var asset = findPlatformAsset(data.assets);
             if (asset && asset.browser_download_url) {

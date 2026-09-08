@@ -68,9 +68,9 @@ pub fn run() {
             .inner_size(1100.0, 750.0)
             .min_inner_size(450.0, 320.0)
             .resizable(true)
+            .devtools(true)
             .user_agent(user_agent)
             .initialization_script(include_str!("../assets/injected.js"));
-
 
             let _window = win_builder.build()?;
 
