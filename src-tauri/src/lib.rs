@@ -52,7 +52,7 @@ pub fn run() {
                 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
             };
 
-            let mut win_builder = tauri::WebviewWindowBuilder::new(
+            let win_builder = tauri::WebviewWindowBuilder::new(
                 app,
                 "main",
                 tauri::WebviewUrl::External(url),
@@ -64,12 +64,6 @@ pub fn run() {
             .user_agent(user_agent)
             .initialization_script(include_str!("../assets/injected.js"));
 
-            #[cfg(target_os = "macos")]
-            {
-                win_builder = win_builder
-                    .title_bar_style(tauri::TitleBarStyle::Overlay)
-                    .hidden_title(true);
-            }
 
             let _window = win_builder.build()?;
 
