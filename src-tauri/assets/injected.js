@@ -327,8 +327,15 @@
         window.toggleMuteAudio();
       } else if (k === 'D') {
         e.preventDefault();
-        invokeBackend('open_download_dir');
-        showFloatingToast('📁 Membuka folder unduhan...');
+        showFloatingToast('📁 Membuka folder di Finder...');
+        invokeBackend('open_download_dir')
+          .then(function() {
+            showFloatingToast('📁 Folder unduhan terbuka di Finder');
+          })
+          .catch(function(err) {
+            console.error('Buka folder error:', err);
+            showFloatingToast('❌ Gagal membuka folder: ' + err);
+          });
       } else if (k === 'R') {
         e.preventDefault();
         showFloatingToast('⚡ Membersihkan cache & reload...');
@@ -479,7 +486,15 @@
       updateModalUI();
     };
     document.getElementById('btn-open-folder').onclick = function() {
-      invokeBackend('open_download_dir');
+      showFloatingToast('📁 Membuka folder di Finder...');
+      invokeBackend('open_download_dir')
+        .then(function() {
+          showFloatingToast('📁 Folder unduhan terbuka di Finder');
+        })
+        .catch(function(err) {
+          console.error('Buka folder error:', err);
+          showFloatingToast('❌ Gagal membuka folder: ' + (err || 'Error tidak diketahui'));
+        });
       closeModal();
     };
   };

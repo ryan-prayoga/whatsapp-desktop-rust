@@ -30,14 +30,63 @@ pub fn toggle_always_on_top(app: AppHandle) -> Result<bool, String> {
 pub fn open_download_dir() -> Result<(), String> {
     let dir = get_default_download_dir();
     if !dir.exists() {
-        let _ = fs::create_dir_all(&dir);
+        fs::create_dir_all(&dir).map_err(|e| format!("Gagal membuat folder unduhan: {}", e))?;
     }
+    println!("📁 Membuka folder unduhan: {:?}", dir);
+
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+        let dir_str = dir.to_string_lossy().to_string();
+
+        // 1. AppleScript: aktifkan Finder dan buka/reveal foldernya agar langsung muncul di depan layar
+        let apple_script = format!(
+            "tell application \"Finder\"\nactivate\nopen POSIX file \"{}\"\nend tell",
+            dir_str
+        );
+        let status = Command::new("osascript")
+            .arg("-e")
+            .arg(&apple_script)
+            .status();
+
+        if let Ok(s) = status {
+            if s.success() {
+                return Ok(());
+            }
+        }
+
+        // 2. Fallback: jalankan `open -a Finder <dir>`
+        let fallback_status = Command::new("open")
+            .arg("-a")
+            .arg("Finder")
+            .arg(&dir)
+            .status();
+
+        if let Ok(s) = fallback_status {
+            if s.success() {
+                return Ok(());
+            }
+        }
+
+        // 3. Fallback standar `open <dir>`
+        let _ = Command::new("open").arg(&dir).status();
+        return Ok(());
+    }
+
+    #[cfg(not(target_os = "macos"))]
     open::that(&dir).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn open_external_url(url: String) -> Result<(), String> {
     if url.starts_with("http://") || url.starts_with("https://") {
+        #[cfg(target_os = "macos")]
+        {
+            use std::process::Command;
+            let _ = Command::new("open").arg(&url).status();
+            Ok(())
+        }
+        #[cfg(not(target_os = "macos"))]
         open::that(&url).map_err(|e| e.to_string())
     } else {
         Err("Invalid URL protocol".to_string())
