@@ -304,15 +304,66 @@
       return origAnchorClick.apply(this, arguments);
     };
 
+    // --- Blob & Media Memory Cache LRU Management ---
+    var trackedBlobs = [];
     var origCreateObjectURL = URL.createObjectURL;
+    var origRevokeObjectURL = URL.revokeObjectURL;
+
     URL.createObjectURL = function(blob) {
       var url = origCreateObjectURL.apply(this, arguments);
+      trackedBlobs.push(url);
+      // Auto-revoke oldest blobs when exceeding 50 items to free WebKit heap
+      if (trackedBlobs.length > 50) {
+        var old = trackedBlobs.shift();
+        try { origRevokeObjectURL.call(URL, old); } catch(e) {}
+      }
       if (blob && (blob.type === 'application/pdf' || (blob.type && blob.type.indexOf('pdf') >= 0))) {
         var name = lastDocName.toLowerCase().endsWith('.pdf') ? lastDocName : (lastDocName + '.pdf');
         captureDownload(url, name);
       }
       return url;
     };
+
+    URL.revokeObjectURL = function(url) {
+      var idx = trackedBlobs.indexOf(url);
+      if (idx >= 0) trackedBlobs.splice(idx, 1);
+      return origRevokeObjectURL.apply(this, arguments);
+    };
+
+    // Global memory cache release helper
+    window.cleanMemoryCaches = function() {
+      // 1. Prune tracked blob URLs down to 10
+      while (trackedBlobs.length > 10) {
+        var oldUrl = trackedBlobs.shift();
+        try { origRevokeObjectURL.call(URL, oldUrl); } catch (e) {}
+      }
+      // 2. Clear non-critical media and temp response caches
+      if ('caches' in window) {
+        caches.keys().then(function(keys) {
+          keys.forEach(function(k) {
+            if (k.indexOf('media') >= 0 || k.indexOf('temp') >= 0) {
+              caches.delete(k);
+            }
+          });
+        });
+      }
+      // 3. Clear paused non-visible media elements
+      document.querySelectorAll('audio, video').forEach(function(m) {
+        if (m.paused && m.currentTime === 0 && !m.closest('#main')) {
+          m.src = '';
+          m.load();
+        }
+      });
+    };
+
+    // Purge memory on window idle or hidden
+    var idleTimer = null;
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(window.cleanMemoryCaches, 3000);
+      }
+    });
   })();
 
   // --- 12. Theme Management ---

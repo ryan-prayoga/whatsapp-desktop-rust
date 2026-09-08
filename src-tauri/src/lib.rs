@@ -131,6 +131,9 @@ pub fn run() {
                 #[cfg(not(target_os = "linux"))]
                 {
                     api.prevent_close();
+                    if let Some(win) = window.get_webview_window(window.label()) {
+                        let _ = win.eval("if (window.cleanMemoryCaches) window.cleanMemoryCaches();");
+                    }
                     let _ = window.hide();
                 }
             }
