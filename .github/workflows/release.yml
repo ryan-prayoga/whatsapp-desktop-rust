@@ -56,7 +56,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'WhatsApp Desk ${{ github.ref_name }}'
+          releaseName: 'WhatsApp Desk ${{ github.ref_name }} (macOS, Windows, Linux)'
           releaseBody: 'See changelog for details.'
           releaseDraft: false
           prerelease: false
