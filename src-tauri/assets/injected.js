@@ -13,6 +13,62 @@
       ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
       : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36');
 
+  // --- 1c. Early prefers-color-scheme Override ---
+  var currentTheme = 'system';
+  try {
+    currentTheme = localStorage.getItem('wa_desk_theme') || 'system';
+  } catch(e) {}
+
+  var mediaQueryListeners = [];
+  var origMatchMedia = window.matchMedia;
+  if (origMatchMedia) {
+    window.matchMedia = function(query) {
+      var res = origMatchMedia.apply(this, arguments);
+      if (query && typeof query === 'string' && query.indexOf('prefers-color-scheme') >= 0) {
+        var isDarkQuery = query.indexOf('dark') >= 0;
+        var forcedMatches = isDarkQuery;
+        if (currentTheme === 'light') {
+          forcedMatches = !isDarkQuery;
+        } else if (currentTheme === 'dark') {
+          forcedMatches = isDarkQuery;
+        } else {
+          forcedMatches = res ? res.matches : isDarkQuery;
+        }
+
+        return {
+          matches: forcedMatches,
+          media: query,
+          addEventListener: function(t, fn) {
+            if (t === 'change' && typeof fn === 'function' && mediaQueryListeners.indexOf(fn) === -1) {
+              mediaQueryListeners.push(fn);
+            }
+            if (res && res.addEventListener) res.addEventListener(t, fn);
+            else if (res && res.addListener) res.addListener(fn);
+          },
+          removeEventListener: function(t, fn) {
+            var idx = mediaQueryListeners.indexOf(fn);
+            if (idx >= 0) mediaQueryListeners.splice(idx, 1);
+            if (res && res.removeEventListener) res.removeEventListener(t, fn);
+            else if (res && res.removeListener) res.removeListener(fn);
+          },
+          addListener: function(fn) {
+            if (typeof fn === 'function' && mediaQueryListeners.indexOf(fn) === -1) {
+              mediaQueryListeners.push(fn);
+            }
+            if (res && res.addListener) res.addListener(fn);
+          },
+          removeListener: function(fn) {
+            var idx = mediaQueryListeners.indexOf(fn);
+            if (idx >= 0) mediaQueryListeners.splice(idx, 1);
+            if (res && res.removeListener) res.removeListener(fn);
+          },
+          onchange: null
+        };
+      }
+      return res;
+    };
+  }
+
   // --- 1b. Inject CSS Stylesheet ---
   function injectStyles() {
     if (document.getElementById('wa-desktop-rust-style')) return;
@@ -367,44 +423,137 @@
   })();
 
   // --- 12. Theme Management ---
-  var currentTheme = localStorage.getItem('wa_desk_theme') || 'system';
+  var themeObserver = null;
+  var isApplyingTheme = false;
 
-  window.setAppTheme = function(mode) {
-    currentTheme = mode;
-    try { localStorage.setItem('wa_desk_theme', mode); } catch (e) {}
+  function getSystemIsDark() {
+    if (origMatchMedia) {
+      return origMatchMedia.call(window, '(prefers-color-scheme: dark)').matches;
+    }
+    return true;
+  }
 
-    var isDark = false;
-    if (mode === 'system') {
-      isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    } else {
-      isDark = (mode === 'dark');
+  function applyThemeToDOM(theme) {
+    currentTheme = theme;
+    try { localStorage.setItem('wa_desk_theme', theme); } catch (e) {}
+
+    var isDark = (theme === 'system') ? getSystemIsDark() : (theme === 'dark');
+
+    isApplyingTheme = true;
+    try {
+      // 1. Update documentElement & body classes
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        if (document.body) {
+          document.body.classList.add('dark');
+          document.body.classList.remove('light');
+        }
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.style.colorScheme = 'dark';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        if (document.body) {
+          document.body.classList.remove('dark');
+          document.body.classList.add('light');
+        }
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.documentElement.style.colorScheme = 'light';
+      }
+
+      // 2. Synchronize WhatsApp Web's own localStorage keys
+      try {
+        if (theme === 'system') {
+          localStorage.setItem('system-theme-mode', 'true');
+          localStorage.setItem('theme', JSON.stringify(isDark ? 'dark' : 'light'));
+        } else {
+          localStorage.setItem('system-theme-mode', 'false');
+          localStorage.setItem('theme', JSON.stringify(theme));
+        }
+      } catch(e) {}
+
+      // 3. Notify media query listeners
+      mediaQueryListeners.forEach(function(fn) {
+        try {
+          fn({ matches: isDark, media: '(prefers-color-scheme: dark)' });
+        } catch(e) {}
+      });
+
+      // 4. Update modal UI if open
+      if (window.syncModalTheme) {
+        window.syncModalTheme(isDark);
+      }
+    } finally {
+      isApplyingTheme = false;
     }
 
-    if (isDark) {
-      document.body.classList.add('dark');
-      document.body.classList.remove('light');
-      try { localStorage.setItem('theme', '"dark"'); } catch (e) {}
-    } else {
-      document.body.classList.remove('dark');
-      document.body.classList.add('light');
-      try { localStorage.setItem('theme', '"light"'); } catch (e) {}
+    // 5. Ensure MutationObserver prevents WhatsApp from reverting body/documentElement theme class
+    if (window.MutationObserver && document.body) {
+      if (!themeObserver) {
+        themeObserver = new MutationObserver(function() {
+          if (isApplyingTheme) return;
+          var shouldBeDark = (currentTheme === 'system') ? getSystemIsDark() : (currentTheme === 'dark');
+          isApplyingTheme = true;
+          try {
+            if (shouldBeDark) {
+              if (!document.documentElement.classList.contains('dark')) document.documentElement.classList.add('dark');
+              document.documentElement.classList.remove('light');
+              if (document.body && !document.body.classList.contains('dark')) document.body.classList.add('dark');
+              if (document.body) document.body.classList.remove('light');
+            } else {
+              document.documentElement.classList.remove('dark');
+              if (!document.documentElement.classList.contains('light')) document.documentElement.classList.add('light');
+              if (document.body) {
+                document.body.classList.remove('dark');
+                if (!document.body.classList.contains('light')) document.body.classList.add('light');
+              }
+            }
+          } finally {
+            isApplyingTheme = false;
+          }
+        });
+      }
+      themeObserver.disconnect();
+      themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     }
+  }
 
-    if (window.syncModalTheme) {
-      window.syncModalTheme(isDark);
+  window.setAppTheme = function(theme) {
+    if (theme !== 'dark' && theme !== 'light' && theme !== 'system') {
+      theme = 'dark';
     }
+    applyThemeToDOM(theme);
+    showFloatingToast(theme === 'dark' ? 'Tema: Mode Gelap' : (theme === 'light' ? 'Tema: Mode Terang' : 'Tema: Mengikuti Sistem'));
   };
 
-  if (window.matchMedia) {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+  // Listen for system appearance changes
+  if (origMatchMedia) {
+    var sysMedia = origMatchMedia.call(window, '(prefers-color-scheme: dark)');
+    var onSysChange = function() {
       if (currentTheme === 'system') {
-        window.setAppTheme('system');
+        applyThemeToDOM('system');
       }
-    });
+    };
+    if (sysMedia.addEventListener) {
+      sysMedia.addEventListener('change', onSysChange);
+    } else if (sysMedia.addListener) {
+      sysMedia.addListener(onSysChange);
+    }
   }
-  setTimeout(function() {
-    window.setAppTheme(currentTheme);
-  }, 350);
+
+  function initTheme() {
+    applyThemeToDOM(currentTheme);
+  }
+  initTheme();
+  document.addEventListener('DOMContentLoaded', initTheme);
+  window.addEventListener('load', initTheme);
+  setInterval(function() {
+    if (document.body && !themeObserver) {
+      applyThemeToDOM(currentTheme);
+    }
+  }, 2000);
 
   // --- 13. AutoStart & Download Directory IPC Helpers ---
   window.isAutoStartActive = false;
@@ -647,7 +796,7 @@
       '    </div>' +
       '    <div>' +
       '      <h3 id="wa-modal-title" style="margin:0;font-size:15px;font-weight:600;">WhatsApp Desk</h3>' +
-      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.0</span>' +
+      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.1</span>' +
       '    </div>' +
       '  </div>' +
       '  <button id="wa-settings-close-x" style="background:transparent;border:none;cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;">' + ICONS.close + '</button>' +
@@ -986,8 +1135,29 @@
 
     // Maintenance Actions
     document.getElementById('wa-btn-check-updates').onclick = function() {
-      showFloatingToast('Membuka rilis terbaru...');
-      invokeBackend('open_external_url', { url: 'https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest' });
+      showFloatingToast('Memeriksa pembaruan...');
+      fetch('https://api.github.com/repos/ryan-prayoga/whatsapp-desktop-rust/releases/latest', { cache: 'no-store' })
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(data) {
+          var latestTag = (data.tag_name || '').trim();
+          var latestVer = latestTag.replace(/^v/, '').trim();
+          var currentVer = '0.2.1';
+          if (latestVer && latestVer !== currentVer) {
+            showFloatingToast('Tersedia versi baru ' + latestTag + '! Membuka unduhan...');
+            setTimeout(function() {
+              invokeBackend('open_external_url', { url: data.html_url || 'https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest' });
+            }, 800);
+          } else {
+            showFloatingToast('WhatsApp Desk sudah versi terbaru (v' + currentVer + ')');
+          }
+        })
+        .catch(function() {
+          showFloatingToast('Membuka rilis terbaru di GitHub...');
+          invokeBackend('open_external_url', { url: 'https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest' });
+        });
     };
     document.getElementById('wa-btn-reload-chat').onclick = function() {
       showFloatingToast('Memuat ulang chat...');
