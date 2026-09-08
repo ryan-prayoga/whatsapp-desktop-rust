@@ -4,6 +4,12 @@ Aplikasi Desktop WhatsApp yang **ultra-ringan, cepat, dan hemat memori** untuk *
 
 Aplikasi ini memanfaatkan webview engine bawaan sistem operasi (Apple WebKit di macOS, Microsoft Edge WebView2 di Windows, dan WebKitGTK di Linux). Tanpa beban runtime Chromium + Node.js dari Electron, aplikasi ini memangkas konsumsi RAM hingga **~90%** dan memangkas ukuran instalasi dari ratusan megabyte menjadi hanya beberapa megabyte.
 
+[![Download Latest Release](https://img.shields.io/github/v/release/ryan-prayoga/whatsapp-desktop-rust?label=Download%20v0.1.0&color=00a884)](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest)
+
+> **📥 Download Siap Pakai:**
+> - [Unduh WhatsApp Desk untuk macOS (.dmg)](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.1.0_aarch64.dmg)
+> - [Unduh WhatsApp Desk untuk macOS (.zip)](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp-Desk-macOS-arm64.zip)
+
 ---
 
 ## 🚀 Perbandingan Sumber Daya
