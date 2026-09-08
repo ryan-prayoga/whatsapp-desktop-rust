@@ -299,6 +299,178 @@ fn get_current_app_bundle() -> PathBuf {
     PathBuf::from("/Applications/WhatsApp Desk.app")
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct UpdateCheckResult {
+    pub available: bool,
+    pub current_version: String,
+    pub latest_version: String,
+    pub latest_tag: String,
+    pub notes: String,
+    pub download_url: String,
+    pub asset_name: String,
+    pub asset_size: u64,
+}
+
+fn is_version_newer(current: &str, latest: &str) -> bool {
+    let parse_parts = |v: &str| -> Vec<u32> {
+        v.split('.')
+            .filter_map(|p| p.chars().take_while(|c| c.is_ascii_digit()).collect::<String>().parse::<u32>().ok())
+            .collect()
+    };
+
+    let curr_parts = parse_parts(current);
+    let late_parts = parse_parts(latest);
+
+    let max_len = curr_parts.len().max(late_parts.len());
+    for i in 0..max_len {
+        let c = curr_parts.get(i).copied().unwrap_or(0);
+        let l = late_parts.get(i).copied().unwrap_or(0);
+        if l > c {
+            return true;
+        } else if l < c {
+            return false;
+        }
+    }
+    false
+}
+
+#[tauri::command]
+pub fn check_for_updates(app: AppHandle) -> Result<UpdateCheckResult, String> {
+    let current_version = app.package_info().version.to_string();
+
+    #[cfg(target_os = "windows")]
+    let curl_bin = "curl.exe";
+    #[cfg(not(target_os = "windows"))]
+    let curl_bin = "curl";
+
+    let output = std::process::Command::new(curl_bin)
+        .arg("-s")
+        .arg("-L")
+        .arg("--connect-timeout")
+        .arg("10")
+        .arg("--max-time")
+        .arg("20")
+        .arg("-H")
+        .arg("User-Agent: WhatsApp-Desk-Updater")
+        .arg("-H")
+        .arg("Accept: application/vnd.github.v3+json")
+        .arg("https://api.github.com/repos/ryan-prayoga/whatsapp-desktop-rust/releases/latest")
+        .output()
+        .map_err(|e| format!("Gagal menghubungi server rilis: {}", e))?;
+
+    if !output.status.success() {
+        return Err("Gagal memeriksa versi rilis terbaru dari GitHub".to_string());
+    }
+
+    let json_str = String::from_utf8_lossy(&output.stdout);
+    let release: serde_json::Value = serde_json::from_str(&json_str)
+        .map_err(|e| format!("Format respons rilis tidak valid: {}", e))?;
+
+    let tag_name = release.get("tag_name")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .trim();
+
+    let latest_version = tag_name.trim_start_matches('v').to_string();
+    let notes = release.get("body")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    if latest_version.is_empty() {
+        return Err("Tidak dapat membaca nomor versi rilis terbaru".to_string());
+    }
+
+    let is_newer = is_version_newer(&current_version, &latest_version);
+
+    let mut selected_url = String::new();
+    let mut selected_name = String::new();
+    let mut selected_size = 0u64;
+
+    if is_newer {
+        let assets = release.get("assets").and_then(|v| v.as_array());
+        if let Some(asset_list) = assets {
+            #[cfg(target_os = "macos")]
+            {
+                // Prefer .app.tar.gz for seamless background replacement and auto-restart, fallback to .dmg
+                for a in asset_list {
+                    if let Some(name) = a.get("name").and_then(|v| v.as_str()) {
+                        if name.ends_with(".app.tar.gz") {
+                            selected_name = name.to_string();
+                            selected_url = a.get("browser_download_url").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                            selected_size = a.get("size").and_then(|v| v.as_u64()).unwrap_or(0);
+                            break;
+                        }
+                    }
+                }
+                if selected_url.is_empty() {
+                    for a in asset_list {
+                        if let Some(name) = a.get("name").and_then(|v| v.as_str()) {
+                            if name.ends_with(".dmg") {
+                                selected_name = name.to_string();
+                                selected_url = a.get("browser_download_url").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                                selected_size = a.get("size").and_then(|v| v.as_u64()).unwrap_or(0);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                for a in asset_list {
+                    if let Some(name) = a.get("name").and_then(|v| v.as_str()) {
+                        if name.ends_with("-setup.exe") || name.ends_with(".exe") {
+                            selected_name = name.to_string();
+                            selected_url = a.get("browser_download_url").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                            selected_size = a.get("size").and_then(|v| v.as_u64()).unwrap_or(0);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            #[cfg(target_os = "linux")]
+            {
+                for a in asset_list {
+                    if let Some(name) = a.get("name").and_then(|v| v.as_str()) {
+                        if name.ends_with(".AppImage") {
+                            selected_name = name.to_string();
+                            selected_url = a.get("browser_download_url").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                            selected_size = a.get("size").and_then(|v| v.as_u64()).unwrap_or(0);
+                            break;
+                        }
+                    }
+                }
+                if selected_url.is_empty() {
+                    for a in asset_list {
+                        if let Some(name) = a.get("name").and_then(|v| v.as_str()) {
+                            if name.ends_with(".deb") {
+                                selected_name = name.to_string();
+                                selected_url = a.get("browser_download_url").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                                selected_size = a.get("size").and_then(|v| v.as_u64()).unwrap_or(0);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(UpdateCheckResult {
+        available: is_newer && !selected_url.is_empty(),
+        current_version,
+        latest_version,
+        latest_tag: tag_name.to_string(),
+        notes,
+        download_url: selected_url,
+        asset_name: selected_name,
+        asset_size: selected_size,
+    })
+}
+
 #[tauri::command]
 pub async fn download_and_install_update(
     _app: AppHandle,
@@ -459,6 +631,22 @@ pub fn set_native_theme(app: AppHandle, theme: String) -> Result<(), String> {
         window.set_theme(t).map_err(|e| e.to_string())?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_version_newer() {
+        assert!(is_version_newer("0.2.7", "0.2.8"));
+        assert!(is_version_newer("0.2.7", "0.3.0"));
+        assert!(is_version_newer("0.2.7", "1.0.0"));
+        assert!(!is_version_newer("0.2.8", "0.2.7"));
+        assert!(!is_version_newer("0.2.8", "0.2.8"));
+        assert!(!is_version_newer("1.0.0", "0.9.9"));
+        assert!(is_version_newer("0.2.7", "0.2.7.1"));
+    }
 }
 
 

@@ -871,7 +871,7 @@
       '    </div>' +
       '    <div>' +
       '      <h3 id="wa-modal-title" style="margin:0;font-size:15px;font-weight:600;">WhatsApp Desk</h3>' +
-      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.7</span>' +
+      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.8</span>' +
       '    </div>' +
       '  </div>' +
       '  <button id="wa-settings-close-x" style="background:transparent;border:none;cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;">' + ICONS.close + '</button>' +
@@ -1256,32 +1256,27 @@
     // Maintenance Actions
     document.getElementById('wa-btn-check-updates').onclick = function() {
       showFloatingToast('Memeriksa pembaruan...');
-      fetch('https://api.github.com/repos/ryan-prayoga/whatsapp-desktop-rust/releases/latest', { cache: 'no-store' })
+      invokeBackend('check_for_updates')
         .then(function(res) {
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json();
-        })
-        .then(function(data) {
-          var latestTag = (data.tag_name || '').trim();
-          var latestVer = latestTag.replace(/^v/, '').trim();
-          var currentVer = '0.2.7';
-          if (latestVer && latestVer !== currentVer) {
-            var asset = findPlatformAsset(data.assets);
-            if (asset && asset.browser_download_url) {
-              window.showDirectUpdateModal(data, asset);
-            } else {
-              showFloatingToast('Tersedia versi baru ' + latestTag + '! Membuka unduhan...');
-              setTimeout(function() {
-                invokeBackend('open_external_url', { url: data.html_url || 'https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest' });
-              }, 800);
-            }
+          if (res && res.available && res.download_url) {
+            var releaseData = {
+              tag_name: res.latest_tag || ('v' + res.latest_version),
+              html_url: 'https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/tag/' + (res.latest_tag || ('v' + res.latest_version)),
+              body: res.notes || ''
+            };
+            var asset = {
+              name: res.asset_name,
+              browser_download_url: res.download_url,
+              size: res.asset_size
+            };
+            window.showDirectUpdateModal(releaseData, asset);
           } else {
-            showFloatingToast('WhatsApp Desk sudah versi terbaru (v' + currentVer + ')');
+            var curr = (res && res.current_version) ? res.current_version : '0.2.8';
+            showFloatingToast('WhatsApp Desk sudah versi terbaru (v' + curr + ')');
           }
         })
-        .catch(function() {
-          showFloatingToast('Membuka rilis terbaru di GitHub...');
-          invokeBackend('open_external_url', { url: 'https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest' });
+        .catch(function(err) {
+          showFloatingToast('Gagal memeriksa pembaruan: ' + (err || 'Koneksi terputus'));
         });
     };
     document.getElementById('wa-btn-reload-chat').onclick = function() {
