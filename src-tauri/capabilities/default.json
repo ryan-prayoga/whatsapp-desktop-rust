@@ -16,7 +16,13 @@
     "allow-save-downloaded-file",
     "allow-send-notification",
     "allow-toggle-always-on-top",
-    "allow-update-dock-badge"
+    "allow-update-dock-badge",
+    "allow-get-download-dir",
+    "allow-set-download-dir",
+    "allow-reset-download-dir",
+    "allow-pick-download-dir",
+    "allow-get-autostart-status",
+    "allow-toggle-autostart"
   ],
   "remote": {
     "urls": [

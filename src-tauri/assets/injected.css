@@ -78,3 +78,20 @@ html, body, #app {
   from { transform: translateY(-100%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* 5. Modal Scrollbar & Hover */
+#wa-settings-container::-webkit-scrollbar,
+#wa-shortcuts-overlay div::-webkit-scrollbar {
+  width: 6px;
+}
+#wa-settings-container::-webkit-scrollbar-thumb,
+#wa-shortcuts-overlay div::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
+}
+.wa-theme-btn, .wa-card-btn {
+  transition: all 0.15s ease-in-out;
+}
+.wa-theme-btn:hover, .wa-card-btn:hover {
+  filter: brightness(1.15);
+}

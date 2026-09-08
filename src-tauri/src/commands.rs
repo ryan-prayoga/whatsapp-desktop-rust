@@ -27,57 +27,6 @@ pub fn toggle_always_on_top(app: AppHandle) -> Result<bool, String> {
 }
 
 #[tauri::command]
-pub fn open_download_dir() -> Result<(), String> {
-    let dir = get_default_download_dir();
-    if !dir.exists() {
-        fs::create_dir_all(&dir).map_err(|e| format!("Gagal membuat folder unduhan: {}", e))?;
-    }
-    println!("📁 Membuka folder unduhan: {:?}", dir);
-
-    #[cfg(target_os = "macos")]
-    {
-        use std::process::Command;
-        let dir_str = dir.to_string_lossy().to_string();
-
-        // 1. AppleScript: aktifkan Finder dan buka/reveal foldernya agar langsung muncul di depan layar
-        let apple_script = format!(
-            "tell application \"Finder\"\nactivate\nopen POSIX file \"{}\"\nend tell",
-            dir_str
-        );
-        let status = Command::new("osascript")
-            .arg("-e")
-            .arg(&apple_script)
-            .status();
-
-        if let Ok(s) = status {
-            if s.success() {
-                return Ok(());
-            }
-        }
-
-        // 2. Fallback: jalankan `open -a Finder <dir>`
-        let fallback_status = Command::new("open")
-            .arg("-a")
-            .arg("Finder")
-            .arg(&dir)
-            .status();
-
-        if let Ok(s) = fallback_status {
-            if s.success() {
-                return Ok(());
-            }
-        }
-
-        // 3. Fallback standar `open <dir>`
-        let _ = Command::new("open").arg(&dir).status();
-        return Ok(());
-    }
-
-    #[cfg(not(target_os = "macos"))]
-    open::that(&dir).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
 pub fn open_external_url(url: String) -> Result<(), String> {
     if url.starts_with("http://") || url.starts_with("https://") {
         #[cfg(target_os = "macos")]
@@ -98,14 +47,12 @@ pub fn update_dock_badge(_app: AppHandle, count: String) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
         use std::process::Command;
-        // Clean and safe dock tile update via osascript or Objective-C
         let count_clean = count.trim();
         let script = if count_clean.is_empty() {
             "".to_string()
         } else {
             count_clean.to_string()
         };
-        // Use osascript or let Tauri notification badge handle it
         let _ = Command::new("osascript")
             .arg("-e")
             .arg(format!("tell application \"System Events\" to set badge label of UI element \"WhatsApp Desk\" of list 1 of application process \"Dock\" to \"{}\"", script))
@@ -119,6 +66,152 @@ fn get_default_download_dir() -> PathBuf {
     dirs::download_dir()
         .unwrap_or_else(|| PathBuf::from("."))
         .join("WhatsApp Downloads")
+}
+
+fn get_config_path(app: &AppHandle) -> PathBuf {
+    let dir = app
+        .path()
+        .app_config_dir()
+        .unwrap_or_else(|_| dirs::config_dir().unwrap_or_else(|| PathBuf::from(".")).join("whatsapp-desktop-rust"));
+    dir.join("config.json")
+}
+
+fn load_custom_download_dir(app: &AppHandle) -> Option<PathBuf> {
+    let path = get_config_path(app);
+    if let Ok(data) = fs::read_to_string(path) {
+        if let Ok(val) = serde_json::from_str::<serde_json::Value>(&data) {
+            if let Some(dir) = val.get("download_dir").and_then(|v| v.as_str()) {
+                let trimmed = dir.trim();
+                if !trimmed.is_empty() {
+                    return Some(PathBuf::from(trimmed));
+                }
+            }
+        }
+    }
+    None
+}
+
+fn save_custom_download_dir(app: &AppHandle, dir: Option<&Path>) -> Result<(), String> {
+    let path = get_config_path(app);
+    if let Some(parent) = path.parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    let val = serde_json::json!({
+        "download_dir": dir.map(|d| d.to_string_lossy().to_string())
+    });
+    fs::write(path, val.to_string()).map_err(|e| e.to_string())
+}
+
+pub fn get_effective_download_dir(app: &AppHandle) -> PathBuf {
+    load_custom_download_dir(app).unwrap_or_else(get_default_download_dir)
+}
+
+#[tauri::command]
+pub fn get_download_dir(app: AppHandle) -> String {
+    get_effective_download_dir(&app).to_string_lossy().to_string()
+}
+
+#[tauri::command]
+pub fn set_download_dir(app: AppHandle, path: String) -> Result<String, String> {
+    let p = PathBuf::from(&path);
+    if !p.exists() {
+        fs::create_dir_all(&p).map_err(|e| format!("Gagal membuat direktori: {}", e))?;
+    }
+    save_custom_download_dir(&app, Some(&p))?;
+    Ok(p.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub fn reset_download_dir(app: AppHandle) -> Result<String, String> {
+    save_custom_download_dir(&app, None)?;
+    Ok(get_default_download_dir().to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub fn pick_download_dir(app: AppHandle) -> Result<Option<String>, String> {
+    use tauri_plugin_dialog::DialogExt;
+    let folder = app.dialog().file().blocking_pick_folder();
+    if let Some(path) = folder {
+        let path_str = match path {
+            tauri_plugin_dialog::FilePath::Path(p) => p.to_string_lossy().to_string(),
+            tauri_plugin_dialog::FilePath::Url(u) => u.to_file_path().map(|p| p.to_string_lossy().to_string()).unwrap_or_default(),
+        };
+        if !path_str.is_empty() {
+            set_download_dir(app, path_str.clone())?;
+            return Ok(Some(path_str));
+        }
+    }
+    Ok(None)
+}
+
+#[tauri::command]
+pub fn get_autostart_status(app: AppHandle) -> Result<bool, String> {
+    use tauri_plugin_autostart::ManagerExt;
+    app.autolaunch().is_enabled().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn toggle_autostart(app: AppHandle) -> Result<bool, String> {
+    use tauri_plugin_autostart::ManagerExt;
+    let autolaunch = app.autolaunch();
+    let enabled = autolaunch.is_enabled().map_err(|e| e.to_string())?;
+    if enabled {
+        autolaunch.disable().map_err(|e| e.to_string())?;
+        println!("🚀 Auto-start disabled");
+        Ok(false)
+    } else {
+        autolaunch.enable().map_err(|e| e.to_string())?;
+        println!("🚀 Auto-start enabled");
+        Ok(true)
+    }
+}
+
+#[tauri::command]
+pub fn open_download_dir(app: AppHandle) -> Result<(), String> {
+    let dir = get_effective_download_dir(&app);
+    if !dir.exists() {
+        fs::create_dir_all(&dir).map_err(|e| format!("Gagal membuat folder unduhan: {}", e))?;
+    }
+    println!("📁 Membuka folder unduhan: {:?}", dir);
+
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+        let dir_str = dir.to_string_lossy().to_string();
+
+        let apple_script = format!(
+            "tell application \"Finder\"\nactivate\nopen POSIX file \"{}\"\nend tell",
+            dir_str
+        );
+        let status = Command::new("osascript")
+            .arg("-e")
+            .arg(&apple_script)
+            .status();
+
+        if let Ok(s) = status {
+            if s.success() {
+                return Ok(());
+            }
+        }
+
+        let fallback_status = Command::new("open")
+            .arg("-a")
+            .arg("Finder")
+            .arg(&dir)
+            .status();
+
+        if let Ok(s) = fallback_status {
+            if s.success() {
+                return Ok(());
+            }
+        }
+
+        let _ = Command::new("open").arg(&dir).status();
+        return Ok(());
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    open::that(&dir).map_err(|e| e.to_string())
 }
 
 fn get_unique_file_path(dir: &Path, filename: &str) -> PathBuf {
@@ -148,9 +241,9 @@ fn get_unique_file_path(dir: &Path, filename: &str) -> PathBuf {
 }
 
 #[tauri::command]
-pub fn save_downloaded_file(filename: String, data_uri: String) -> Result<String, String> {
+pub fn save_downloaded_file(app: AppHandle, filename: String, data_uri: String) -> Result<String, String> {
     use base64::Engine as _;
-    let download_dir = get_default_download_dir();
+    let download_dir = get_effective_download_dir(&app);
     fs::create_dir_all(&download_dir).map_err(|e| format!("Failed to create download dir: {}", e))?;
 
     // Sanitize filename

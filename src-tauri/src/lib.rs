@@ -32,6 +32,12 @@ pub fn run() {
         commands::open_external_url,
         commands::update_dock_badge,
         commands::save_downloaded_file,
+        commands::get_download_dir,
+        commands::set_download_dir,
+        commands::reset_download_dir,
+        commands::pick_download_dir,
+        commands::get_autostart_status,
+        commands::toggle_autostart,
     ]);
 
     // 3. Setup & App Lifecycle

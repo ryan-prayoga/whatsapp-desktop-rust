@@ -61,7 +61,7 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             "downloads" => {
-                let _ = crate::commands::open_download_dir();
+                let _ = crate::commands::open_download_dir(app.clone());
             }
             "reload" => {
                 if let Some(win) = app.get_webview_window("main") {

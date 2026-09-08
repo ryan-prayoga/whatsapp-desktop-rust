@@ -8,6 +8,12 @@ fn main() {
                 "open_external_url",
                 "update_dock_badge",
                 "save_downloaded_file",
+                "get_download_dir",
+                "set_download_dir",
+                "reset_download_dir",
+                "pick_download_dir",
+                "get_autostart_status",
+                "toggle_autostart",
             ]),
         ),
     )
