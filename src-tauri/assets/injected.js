@@ -311,66 +311,22 @@
       return origAnchorClick.apply(this, arguments);
     };
 
-    // --- Blob & Media Memory Cache LRU Management ---
-    var trackedBlobs = [];
+    // --- Blob Interception for Native Document Downloads ---
     var origCreateObjectURL = URL.createObjectURL;
-    var origRevokeObjectURL = URL.revokeObjectURL;
-
     URL.createObjectURL = function(blob) {
       var url = origCreateObjectURL.apply(this, arguments);
-      trackedBlobs.push(url);
-      // Auto-revoke oldest blobs when exceeding 50 items to free WebKit heap
-      if (trackedBlobs.length > 50) {
-        var old = trackedBlobs.shift();
-        try { origRevokeObjectURL.call(URL, old); } catch(e) {}
-      }
+      // Only capture PDF documents for native download directory saving
       if (blob && (blob.type === 'application/pdf' || (blob.type && blob.type.indexOf('pdf') >= 0))) {
         var name = lastDocName.toLowerCase().endsWith('.pdf') ? lastDocName : (lastDocName + '.pdf');
         captureDownload(url, name);
       }
+      // Never revoke or destroy blobs: WhatsApp Web manages media, stickers, and chat background lifecycle natively
       return url;
     };
 
-    URL.revokeObjectURL = function(url) {
-      var idx = trackedBlobs.indexOf(url);
-      if (idx >= 0) trackedBlobs.splice(idx, 1);
-      return origRevokeObjectURL.apply(this, arguments);
-    };
-
-    // Global memory cache release helper
     window.cleanMemoryCaches = function() {
-      // 1. Prune tracked blob URLs down to 10
-      while (trackedBlobs.length > 10) {
-        var oldUrl = trackedBlobs.shift();
-        try { origRevokeObjectURL.call(URL, oldUrl); } catch (e) {}
-      }
-      // 2. Clear non-critical media and temp response caches
-      if ('caches' in window) {
-        caches.keys().then(function(keys) {
-          keys.forEach(function(k) {
-            if (k.indexOf('media') >= 0 || k.indexOf('temp') >= 0) {
-              caches.delete(k);
-            }
-          });
-        });
-      }
-      // 3. Clear paused non-visible media elements
-      document.querySelectorAll('audio, video').forEach(function(m) {
-        if (m.paused && m.currentTime === 0 && !m.closest('#main')) {
-          m.src = '';
-          m.load();
-        }
-      });
+      // Safe no-op: preserve CacheStorage and Blobs so media and stickers remain instant
     };
-
-    // Purge memory on window idle or hidden
-    var idleTimer = null;
-    document.addEventListener('visibilitychange', function() {
-      if (document.hidden) {
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(window.cleanMemoryCaches, 3000);
-      }
-    });
   })();
 
   // --- 12. Native Theme Management ---
@@ -874,7 +830,7 @@
       '    </div>' +
       '    <div>' +
       '      <h3 id="wa-modal-title" style="margin:0;font-size:15px;font-weight:600;">WhatsApp Desk</h3>' +
-      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.5</span>' +
+      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.6</span>' +
       '    </div>' +
       '  </div>' +
       '  <button id="wa-settings-close-x" style="background:transparent;border:none;cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;">' + ICONS.close + '</button>' +
@@ -1234,7 +1190,7 @@
         .then(function(data) {
           var latestTag = (data.tag_name || '').trim();
           var latestVer = latestTag.replace(/^v/, '').trim();
-          var currentVer = '0.2.5';
+          var currentVer = '0.2.6';
           if (latestVer && latestVer !== currentVer) {
             var asset = findPlatformAsset(data.assets);
             if (asset && asset.browser_download_url) {
