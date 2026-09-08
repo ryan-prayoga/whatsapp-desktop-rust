@@ -4,19 +4,19 @@ Aplikasi Desktop WhatsApp yang **ultra-ringan, cepat, dan hemat memori** untuk *
 
 Aplikasi ini memanfaatkan webview engine bawaan sistem operasi (Apple WebKit di macOS, Microsoft Edge WebView2 di Windows, dan WebKitGTK di Linux). Tanpa beban runtime Chromium + Node.js dari Electron, aplikasi ini memangkas konsumsi RAM hingga **~90%** dan memangkas ukuran instalasi dari ratusan megabyte menjadi hanya beberapa megabyte.
 
-[![Download Latest Release](https://img.shields.io/github/v/release/ryan-prayoga/whatsapp-desktop-rust?label=Download%20v0.2.6&color=00a884)](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest)
+[![Download Latest Release](https://img.shields.io/github/v/release/ryan-prayoga/whatsapp-desktop-rust?label=Download%20v0.2.7&color=00a884)](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest)
 
 ### 📥 Unduh Installer (Multi-Platform)
 
 | Sistem Operasi | Berkas Installer | Tipe |
 | :--- | :--- | :--- |
-| **macOS** | [**WhatsApp.Desk_0.2.6_universal.dmg**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.6_universal.dmg) | Universal (Apple Silicon & Intel) |
-| **macOS** | [**WhatsApp.Desk_0.2.6_aarch64.dmg**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.6_aarch64.dmg) | Apple Silicon (M1/M2/M3/M4) |
-| **Windows** | [**WhatsApp.Desk_0.2.6_x64-setup.exe**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.6_x64-setup.exe) | Setup Installer (.exe) |
-| **Windows** | [**WhatsApp.Desk_0.2.6_x64_en-US.msi**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.6_x64_en-US.msi) | Windows MSI Installer |
-| **Linux** | [**WhatsApp.Desk_0.2.6_amd64.deb**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.6_amd64.deb) | Debian / Ubuntu / Mint (.deb) |
-| **Linux** | [**WhatsApp.Desk_0.2.6_amd64.AppImage**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.6_amd64.AppImage) | Universal Portable (.AppImage) |
-| **Linux** | [**WhatsApp.Desk-0.2.6-1.x86_64.rpm**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk-0.2.6-1.x86_64.rpm) | Fedora / RHEL / openSUSE (.rpm) |
+| **macOS** | [**WhatsApp.Desk_0.2.7_universal.dmg**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.7_universal.dmg) | Universal (Apple Silicon & Intel) |
+| **macOS** | [**WhatsApp.Desk_0.2.7_aarch64.dmg**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.7_aarch64.dmg) | Apple Silicon (M1/M2/M3/M4) |
+| **Windows** | [**WhatsApp.Desk_0.2.7_x64-setup.exe**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.7_x64-setup.exe) | Setup Installer (.exe) |
+| **Windows** | [**WhatsApp.Desk_0.2.7_x64_en-US.msi**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.7_x64_en-US.msi) | Windows MSI Installer |
+| **Linux** | [**WhatsApp.Desk_0.2.7_amd64.deb**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.7_amd64.deb) | Debian / Ubuntu / Mint (.deb) |
+| **Linux** | [**WhatsApp.Desk_0.2.7_amd64.AppImage**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk_0.2.7_amd64.AppImage) | Universal Portable (.AppImage) |
+| **Linux** | [**WhatsApp.Desk-0.2.7-1.x86_64.rpm**](https://github.com/ryan-prayoga/whatsapp-desktop-rust/releases/latest/download/WhatsApp.Desk-0.2.7-1.x86_64.rpm) | Fedora / RHEL / openSUSE (.rpm) |
 
 ---
 

@@ -34,7 +34,7 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
 
     let icon = app.default_window_icon().cloned().ok_or("No default icon found")?;
 
-    let _tray = TrayIconBuilder::new()
+    let _tray = TrayIconBuilder::with_id("main-tray")
         .icon(icon)
         .icon_as_template(false)
         .tooltip("WhatsApp Desk")

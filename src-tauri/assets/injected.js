@@ -232,24 +232,59 @@
     }, true);
   })();
 
-  // --- 10. Dock Unread Badge Counter ---
+  // --- 10. Dock & Tooltip Unread Badge / Dots Indicator ---
   (function() {
+    var isBadgeEnabled = true;
+    try {
+      var saved = localStorage.getItem('wa_desk_badge_enabled');
+      if (saved !== null) {
+        isBadgeEnabled = (saved === 'true');
+      }
+    } catch(e) {}
+
+    window.isBadgeActive = function() {
+      return isBadgeEnabled;
+    };
+
+    window.toggleBadgeNotification = function() {
+      isBadgeEnabled = !isBadgeEnabled;
+      try {
+        localStorage.setItem('wa_desk_badge_enabled', isBadgeEnabled ? 'true' : 'false');
+      } catch(e) {}
+
+      if (isBadgeEnabled) {
+        showFloatingToast('Indikator Notifikasi: Aktif');
+        checkTitle(true);
+      } else {
+        showFloatingToast('Indikator Notifikasi: Nonaktif');
+        invokeBackend('update_dock_badge', { count: '' });
+      }
+      return isBadgeEnabled;
+    };
+
     var lastBadge = '';
-    function checkTitle() {
+    function checkTitle(force) {
+      if (!isBadgeEnabled) {
+        if (lastBadge !== '') {
+          lastBadge = '';
+          invokeBackend('update_dock_badge', { count: '' });
+        }
+        return;
+      }
       var title = document.title || '';
       var match = title.match(/\(([^)]+)\)/);
       var badge = match ? match[1] : '';
-      if (badge !== lastBadge) {
+      if (badge !== lastBadge || force) {
         lastBadge = badge;
         invokeBackend('update_dock_badge', { count: badge });
       }
     }
+
     var titleEl = document.querySelector('title');
     if (titleEl) {
-      new MutationObserver(checkTitle).observe(titleEl, { childList: true, characterData: true, subtree: true });
-    } else {
-      setInterval(checkTitle, 2500);
+      new MutationObserver(function() { checkTitle(); }).observe(titleEl, { childList: true, characterData: true, subtree: true });
     }
+    setInterval(function() { checkTitle(); }, 2000);
   })();
 
   // --- 11. Intercept Blob / PDF Media Downloads ---
@@ -543,6 +578,7 @@
     clean: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>',
     guide: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="6" y1="8" x2="6.01" y2="8"></line><line x1="10" y1="8" x2="10.01" y2="8"></line><line x1="14" y1="8" x2="14.01" y2="8"></line><line x1="18" y1="8" x2="18.01" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="6" y1="16" x2="18" y2="16"></line></svg>',
     info: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+    bell: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>',
     close: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
   };
 
@@ -563,6 +599,10 @@
       } else if (k === 'M') {
         e.preventDefault();
         window.toggleMuteAudio();
+        if (window.updateModalUI) window.updateModalUI();
+      } else if (k === 'N') {
+        e.preventDefault();
+        window.toggleBadgeNotification();
         if (window.updateModalUI) window.updateModalUI();
       } else if (k === 'S') {
         e.preventDefault();
@@ -637,6 +677,7 @@
       { key: modName + ' + Shift + P', desc: 'Mode Privasi (Sensor pesan & media)' },
       { key: modName + ' + Shift + T', desc: 'Pin Jendela (Always on Top)' },
       { key: modName + ' + Shift + M', desc: 'Senyapkan Audio Notifikasi' },
+      { key: modName + ' + Shift + N', desc: 'Toggle Indikator Notifikasi (Badge/Dots)' },
       { key: modName + ' + Shift + S', desc: 'Toggle Buka saat Komputer Nyala' },
       { key: modName + ' + Shift + D', desc: 'Buka Folder Unduhan Berkas' },
       { key: modName + ' + R  /  F5', desc: 'Muat Ulang Tampilan Chat' },
@@ -830,7 +871,7 @@
       '    </div>' +
       '    <div>' +
       '      <h3 id="wa-modal-title" style="margin:0;font-size:15px;font-weight:600;">WhatsApp Desk</h3>' +
-      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.6</span>' +
+      '      <span id="wa-modal-sub" style="font-size:11px;">Klien Ringan Cepat · Versi 0.2.7</span>' +
       '    </div>' +
       '  </div>' +
       '  <button id="wa-settings-close-x" style="background:transparent;border:none;cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;">' + ICONS.close + '</button>' +
@@ -855,7 +896,7 @@
       '  </div>' +
       '</div>' +
 
-      // Section 2: 4 Quick Control Cards (2x2 Grid)
+      // Section 2: 5 Quick Control Cards
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">' +
       // Card 1: Mode Privasi
       '  <div class="wa-modal-card" style="padding:10px 12px;border-radius:8px;border-width:1px;border-style:solid;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
@@ -902,18 +943,34 @@
       '    </div>' +
       '  </div>' +
 
-      // Card 4: Buka saat Boot
+      // Card 4: Titik & Total Notif
       '  <div class="wa-modal-card" style="padding:10px 12px;border-radius:8px;border-width:1px;border-style:solid;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
       '    <div>' +
       '      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">' +
-      '        <div style="display:flex;align-items:center;gap:6px;"><span class="wa-icon-accent">' + ICONS.power + '</span><strong class="wa-text-primary" style="font-size:12.5px;">Buka saat Boot</strong></div>' +
-      '        <span id="wa-badge-auto" style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;">...</span>' +
+      '        <div style="display:flex;align-items:center;gap:6px;"><span class="wa-icon-accent">' + ICONS.bell + '</span><strong class="wa-text-primary" style="font-size:12.5px;">Titik & Total Notif</strong></div>' +
+      '        <span id="wa-badge-dots" style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;">...</span>' +
       '      </div>' +
-      '      <div class="wa-text-muted" style="font-size:11px;margin-top:4px;">Mulai WhatsApp otomatis saat komputer nyala.</div>' +
+      '      <div class="wa-text-muted" style="font-size:11px;margin-top:4px;">Tampilkan unread di Dock dan tooltip.</div>' +
       '    </div>' +
       '    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:2px;">' +
+      '      <span class="wa-text-muted" style="font-size:10px;font-family:monospace;">' + modName + '+Shift+N</span>' +
+      '      <button id="wa-action-toggle-dots" class="wa-card-btn" style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border-width:1px;border-style:solid;">Toggle</button>' +
+      '    </div>' +
+      '  </div>' +
+
+      // Card 5: Buka saat Boot
+      '  <div class="wa-modal-card" style="grid-column:1 / -1;padding:10px 12px;border-radius:8px;border-width:1px;border-style:solid;display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
+      '    <div>' +
+      '      <div style="display:flex;align-items:center;gap:6px;">' +
+      '        <span class="wa-icon-accent">' + ICONS.power + '</span>' +
+      '        <strong class="wa-text-primary" style="font-size:12.5px;">Buka saat Boot</strong>' +
+      '        <span id="wa-badge-auto" style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;">...</span>' +
+      '      </div>' +
+      '      <div class="wa-text-muted" style="font-size:11px;margin-top:2px;">Mulai WhatsApp Desk otomatis saat komputer dinyalakan.</div>' +
+      '    </div>' +
+      '    <div style="display:flex;align-items:center;gap:8px;">' +
       '      <span class="wa-text-muted" style="font-size:10px;font-family:monospace;">' + modName + '+Shift+S</span>' +
-      '      <button id="wa-action-toggle-auto" class="wa-card-btn" style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border-width:1px;border-style:solid;">Toggle</button>' +
+      '      <button id="wa-action-toggle-auto" class="wa-card-btn" style="padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border-width:1px;border-style:solid;">Toggle</button>' +
       '    </div>' +
       '  </div>' +
       '</div>' +
@@ -1101,6 +1158,16 @@
         btnAuto.textContent = autoActive ? 'Matikan' : 'Aktifkan';
       }
 
+      var badgeActive = window.isBadgeActive ? window.isBadgeActive() : true;
+      var badgeDots = document.getElementById('wa-badge-dots');
+      var btnDots = document.getElementById('wa-action-toggle-dots');
+      if (badgeDots && btnDots) {
+        badgeDots.textContent = badgeActive ? 'Aktif' : 'Nonaktif';
+        badgeDots.style.background = badgeActive ? (isThemeDark ? 'rgba(0,168,132,0.15)' : 'rgba(0,128,105,0.15)') : 'rgba(255,255,255,0.06)';
+        badgeDots.style.color = badgeActive ? accent : '#8696a0';
+        btnDots.textContent = badgeActive ? 'Matikan' : 'Aktifkan';
+      }
+
       window.syncModalTheme(isThemeDark);
     };
 
@@ -1151,6 +1218,13 @@
       window.toggleMuteAudio();
       window.updateModalUI();
     };
+    var btnToggleDots = document.getElementById('wa-action-toggle-dots');
+    if (btnToggleDots) {
+      btnToggleDots.onclick = function() {
+        window.toggleBadgeNotification();
+        window.updateModalUI();
+      };
+    }
     document.getElementById('wa-action-toggle-auto').onclick = function() {
       window.toggleAutoStart().then(window.updateModalUI);
     };
@@ -1190,7 +1264,7 @@
         .then(function(data) {
           var latestTag = (data.tag_name || '').trim();
           var latestVer = latestTag.replace(/^v/, '').trim();
-          var currentVer = '0.2.6';
+          var currentVer = '0.2.7';
           if (latestVer && latestVer !== currentVer) {
             var asset = findPlatformAsset(data.assets);
             if (asset && asset.browser_download_url) {

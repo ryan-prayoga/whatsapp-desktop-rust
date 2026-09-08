@@ -43,11 +43,25 @@ pub fn open_external_url(url: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn update_dock_badge(_app: AppHandle, count: String) -> Result<(), String> {
+pub fn update_dock_badge(app: AppHandle, count: String) -> Result<(), String> {
+    let count_clean = count.trim();
+
+    // 1. Update System Tray Tooltip
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        let tooltip = if count_clean.is_empty() {
+            "WhatsApp Desk".to_string()
+        } else if count_clean == "•" {
+            "WhatsApp Desk • Pesan belum dibaca".to_string()
+        } else {
+            format!("WhatsApp Desk • {} pesan belum dibaca", count_clean)
+        };
+        let _ = tray.set_tooltip(Some(&tooltip));
+    }
+
+    // 2. Update macOS Dock Badge
     #[cfg(target_os = "macos")]
     {
         use std::process::Command;
-        let count_clean = count.trim();
         let script = if count_clean.is_empty() {
             "".to_string()
         } else {
@@ -58,7 +72,7 @@ pub fn update_dock_badge(_app: AppHandle, count: String) -> Result<(), String> {
             .arg(format!("tell application \"System Events\" to set badge label of UI element \"WhatsApp Desk\" of list 1 of application process \"Dock\" to \"{}\"", script))
             .output();
     }
-    let _ = count;
+
     Ok(())
 }
 
