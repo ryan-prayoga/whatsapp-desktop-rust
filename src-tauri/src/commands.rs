@@ -61,16 +61,14 @@ pub fn update_dock_badge(app: AppHandle, count: String) -> Result<(), String> {
     // 2. Update macOS Dock Badge
     #[cfg(target_os = "macos")]
     {
-        use std::process::Command;
-        let script = if count_clean.is_empty() {
-            "".to_string()
-        } else {
-            count_clean.to_string()
-        };
-        let _ = Command::new("osascript")
-            .arg("-e")
-            .arg(format!("tell application \"System Events\" to set badge label of UI element \"WhatsApp Desk\" of list 1 of application process \"Dock\" to \"{}\"", script))
-            .output();
+        if let Some(window) = app.get_webview_window("main") {
+            let label = if count_clean.is_empty() {
+                None
+            } else {
+                Some(count_clean.to_string())
+            };
+            let _ = window.set_badge_label(label);
+        }
     }
 
     Ok(())

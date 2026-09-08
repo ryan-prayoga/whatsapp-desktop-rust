@@ -135,6 +135,10 @@
       options = options || {};
       var body = options.body || '';
       invokeBackend('send_notification', { title: title || 'WhatsApp Desk', body: body });
+      if (typeof window.triggerBadgeCheck === 'function') {
+        setTimeout(window.triggerBadgeCheck, 150);
+        setTimeout(window.triggerBadgeCheck, 800);
+      }
     }
 
     window.Notification = function(title, options) {
@@ -254,7 +258,7 @@
 
       if (isBadgeEnabled) {
         showFloatingToast('Indikator Notifikasi: Aktif');
-        checkTitle(true);
+        checkUnread(true);
       } else {
         showFloatingToast('Indikator Notifikasi: Nonaktif');
         invokeBackend('update_dock_badge', { count: '' });
@@ -263,7 +267,73 @@
     };
 
     var lastBadge = '';
-    function checkTitle(force) {
+
+    function getUnreadCount() {
+      // 1. Check document.title: e.g. "(1) WhatsApp", "(2) WhatsApp", "(•) WhatsApp"
+      var title = document.title || '';
+      var numMatch = title.match(/\(([0-9]+)\)/);
+      if (numMatch && numMatch[1]) {
+        return numMatch[1];
+      }
+      var dotMatch = title.match(/\(([^)]+)\)/);
+      if (dotMatch && dotMatch[1]) {
+        return dotMatch[1];
+      }
+
+      // 2. Check DOM: unread badge spans & chat rows
+      try {
+        var ariaRows = document.querySelectorAll('#pane-side [role="row"], #pane-side [role="listitem"]');
+        var totalFromAria = 0;
+        var hasUnreadRow = false;
+
+        for (var i = 0; i < ariaRows.length; i++) {
+          var aria = ariaRows[i].getAttribute('aria-label') || '';
+          if (/unread|belum dibaca/i.test(aria)) {
+            hasUnreadRow = true;
+            var m = aria.match(/(\d+)\s*(?:pesan belum dibaca|unread message)/i);
+            if (m && m[1]) {
+              totalFromAria += parseInt(m[1], 10);
+            } else {
+              totalFromAria += 1;
+            }
+          }
+        }
+
+        if (totalFromAria > 0) {
+          return totalFromAria.toString();
+        }
+
+        // Secondary check: unread count badges inside #pane-side
+        var unreadBadges = document.querySelectorAll(
+          '#pane-side [data-testid="icon-unread-count"], ' +
+          '#pane-side [data-testid="unread-count"], ' +
+          '#pane-side span[aria-label*="unread" i], ' +
+          '#pane-side span[aria-label*="belum dibaca" i]'
+        );
+
+        if (unreadBadges && unreadBadges.length > 0) {
+          var sum = 0;
+          for (var j = 0; j < unreadBadges.length; j++) {
+            var txt = (unreadBadges[j].textContent || '').trim();
+            var n = parseInt(txt, 10);
+            if (!isNaN(n) && n > 0) {
+              sum += n;
+            } else {
+              sum += 1;
+            }
+          }
+          if (sum > 0) return sum.toString();
+        }
+
+        if (hasUnreadRow) {
+          return '•';
+        }
+      } catch(e) {}
+
+      return '';
+    }
+
+    function checkUnread(force) {
       if (!isBadgeEnabled) {
         if (lastBadge !== '') {
           lastBadge = '';
@@ -271,20 +341,53 @@
         }
         return;
       }
-      var title = document.title || '';
-      var match = title.match(/\(([^)]+)\)/);
-      var badge = match ? match[1] : '';
+
+      var badge = getUnreadCount();
       if (badge !== lastBadge || force) {
         lastBadge = badge;
         invokeBackend('update_dock_badge', { count: badge });
       }
     }
 
-    var titleEl = document.querySelector('title');
-    if (titleEl) {
-      new MutationObserver(function() { checkTitle(); }).observe(titleEl, { childList: true, characterData: true, subtree: true });
+    window.triggerBadgeCheck = function() {
+      checkUnread(true);
+    };
+
+    function attachTitleObserver() {
+      var titleEl = document.querySelector('title');
+      if (titleEl && !titleEl.__wa_observed) {
+        titleEl.__wa_observed = true;
+        new MutationObserver(function() { checkUnread(); })
+          .observe(titleEl, { childList: true, characterData: true, subtree: true });
+        return true;
+      }
+      return false;
     }
-    setInterval(function() { checkTitle(); }, 2000);
+
+    function attachListObserver() {
+      var pane = document.getElementById('pane-side') || document.querySelector('[role="grid"]');
+      if (pane && !pane.__wa_observed) {
+        pane.__wa_observed = true;
+        new MutationObserver(function() { checkUnread(); })
+          .observe(pane, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-label'] });
+        return true;
+      }
+      return false;
+    }
+
+    if (!attachTitleObserver()) {
+      document.addEventListener('DOMContentLoaded', attachTitleObserver);
+      window.addEventListener('load', attachTitleObserver);
+    }
+
+    document.addEventListener('DOMContentLoaded', attachListObserver);
+    window.addEventListener('load', attachListObserver);
+
+    setInterval(function() {
+      attachTitleObserver();
+      attachListObserver();
+      checkUnread();
+    }, 1200);
   })();
 
   // --- 11. Intercept Blob / PDF Media Downloads ---
